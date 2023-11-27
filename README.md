@@ -1,10 +1,10 @@
 <div align="center">
-<h2>
+<h3>
 GigaPose: Fast and Robust Novel Object Pose Estimation via One Correspondence
 <p></p>
-</h2>
+</h3>
 
-<h3>
+<h4>
 <a href="https://nv-nguyen.github.io/" target="_blank"><nobr>Van Nguyen Nguyen</nobr></a> &emsp;
 <a href="http://imagine.enpc.fr/~groueixt/" target="_blank"><nobr>Thibault Groueix</nobr></a> &emsp;
 <a href="https://people.epfl.ch/mathieu.salzmann" target="_blank"><nobr>Mathieu Salzmann</nobr></a> &emsp;
@@ -13,16 +13,16 @@ GigaPose: Fast and Robust Novel Object Pose Estimation via One Correspondence
 <p></p>
 
 <a href="https://nv-nguyen.github.io/gigaPose/"><img 
-src="https://img.shields.io/badge/-Webpage-blue.svg?colorA=333&logo=html5" height=35em></a>
+src="https://img.shields.io/badge/-Webpage-blue.svg?colorA=333&logo=html5" height=20em></a>
 <a href="https://arxiv.org/abs/2311.14155"><img 
-src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=35em></a>
+src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=20em></a>
 <p></p>
 
 <p align="center">
   <img src=./media/overview_inference.png width="100%"/>
 </p>
 
-</h3>
+</h4>
 </div>
 
 **TL;DR**: GigaPose is a "hybrid" template-patch correspondence approach to estimate 6D (coarse) pose of novel objects in RGB images from a single 2D-to-2D correspondence. We experimentally show that GigaPose is (i) faster (38x for coarse pose stage), (ii) robust to segmentation errors made by CNOS, and (iii) more accurate with 3.2 AP improvement (after refinement) on seven core dataset of the BOP challenge.
