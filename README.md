@@ -1,8 +1,10 @@
 <div align="center">
-<h2>
-GigaPose: Fast and Robust Novel Object Pose Estimation via One Correspondence
+<h1>
+GigaPose: Fast and Robust Novel Object Pose Estimation 
+
+via One Correspondence
 <p></p>
-</h2>
+</h1>
 
 <h3>
 <a href="https://nv-nguyen.github.io/" target="_blank"><nobr>Van Nguyen Nguyen</nobr></a> &emsp;
@@ -13,9 +15,9 @@ GigaPose: Fast and Robust Novel Object Pose Estimation via One Correspondence
 <p></p>
 
 <a href="https://nv-nguyen.github.io/gigaPose/"><img 
-src="https://img.shields.io/badge/-Webpage-blue.svg?colorA=333&logo=html5" height=22em></a>
+src="https://img.shields.io/badge/-Webpage-blue.svg?colorA=333&logo=html5" height=25em></a>
 <a href="https://arxiv.org/abs/2311.14155"><img 
-src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=22em></a>
+src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=25em></a>
 <p></p>
 
 <p align="center">
