@@ -1,0 +1,5 @@
+# organize into three folders: shard, transform, template
+defaults:
+  - /data/transform@transform
+  - /data/bop@test
+  - /data/megapose@train

@@ -1,0 +1,21 @@
+root_dir: ${machine.root_dir}/datasets/
+source_url: https://bop.felk.cvut.cz/media/data/bop_datasets/
+unzip_mode: unzip
+
+# dataloader for megapose-gso
+dataloader:
+  _target_: src.dataloader.train.GigaPoseTrainSet
+  dataset_name: gso
+  depth_scale: 10.0
+  root_dir: ${machine.root_dir}/datasets/
+  transforms: ${data.transform} # transform configs
+  template_config:
+    dir: ${machine.root_dir}/datasets/templates
+    level_templates: 1
+    pose_distribution: all
+    scale_factor: 10.0 # scale back to realistic renderings
+    num_templates: 162
+    image_name: OBJECT_ID/VIEW_ID.png
+    pose_name: object_poses/OBJECT_ID.npy
+
+  

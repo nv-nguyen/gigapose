@@ -1,0 +1,53 @@
+# normalize transform
+normalize:
+  _target_: torchvision.transforms.Compose
+  transforms:
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.48145466, 0.4578275, 0.40821073]
+      std: [0.26862954, 0.26130258, 0.27577711]
+
+# crop transform
+crop_transform:
+  _target_: src.utils.crop.CropResizePad
+  target_size: 224
+
+# augmentation
+rgb_transform:
+  _target_: megapose.datasets.augmentations.SceneObservationAugmentation
+  transform:
+    # blur
+    - _target_: megapose.datasets.augmentations.SceneObservationAugmentation
+      transform:
+        _target_: megapose.datasets.augmentations.PillowBlur
+        factor_interval: [1, 3]
+      p: 0.4
+    # sharpness
+    - _target_: megapose.datasets.augmentations.SceneObservationAugmentation
+      transform:
+        _target_: megapose.datasets.augmentations.PillowSharpness
+        factor_interval: [0.0, 50.0]
+      p: 0.3
+    # contrast
+    - _target_: megapose.datasets.augmentations.SceneObservationAugmentation
+      transform:
+        _target_: megapose.datasets.augmentations.PillowContrast
+        factor_interval: [0.2, 50.0]
+      p: 0.3
+    # brightness
+    - _target_: megapose.datasets.augmentations.SceneObservationAugmentation
+      transform:
+        _target_: megapose.datasets.augmentations.PillowBrightness
+        factor_interval: [0.1, 6.0]
+      p: 0.5
+    # color
+    - _target_: megapose.datasets.augmentations.SceneObservationAugmentation
+      transform:
+        _target_: megapose.datasets.augmentations.PillowColor
+        factor_interval: [0.0, 20.0]
+      p: 0.3
+  p: 0.8
+
+# augmentation
+crop_augmentation: False
+inplane_augmentation: False
+rgb_augmentation: True

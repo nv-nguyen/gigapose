@@ -1,0 +1,19 @@
+defaults:
+  - user: default
+  - machine: local
+  - callback: base
+  - data: all
+  - model: large
+  - _self_
+
+nets_to_train: all
+
+save_dir: ${machine.root_dir}/results/${name_exp}
+name_exp:  ${model.model_name}_${run_id}
+test_dataset_name: hb
+
+run_id: 
+disable_output: false
+
+# for refinement
+use_multiple: true

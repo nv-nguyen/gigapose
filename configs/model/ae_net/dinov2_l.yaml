@@ -1,0 +1,10 @@
+_target_: src.models.network.ae_net.AENet
+model_name: dinov2_vitl14
+
+dinov2_model:
+  _target_: torch.hub.load
+  repo_or_dir: facebookresearch/dinov2
+  model: ${model.ae_net.model_name}
+
+max_batch_size: 64
+descriptor_size: 1024

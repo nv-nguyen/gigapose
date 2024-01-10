@@ -1,0 +1,41 @@
+_target_: src.models.gigaPose.GigaPose
+model_name: large
+log_interval: 1000
+log_dir: ${save_dir}
+
+defaults:
+  - ae_net: dinov2_l
+  - ist_net: resnet
+  - refiner: rgb
+
+training_loss:
+  contrast_loss:
+    _target_: src.models.loss.InfoNCE
+    tau: 0.1
+
+  scale_loss: 
+    _target_: src.models.loss.ScaleLoss
+    loss: l2
+    log: true
+    
+  inplane_loss: 
+    _target_: src.models.loss.InplaneLoss
+    loss: geodesic
+    normalize: false
+
+optim_config:
+  loss_type: l1
+  ae_lr: 1e-5
+  ist_lr: 1e-4
+  weight_decay: 0.0005
+  warm_up_steps: 200
+  use_gt_masks: True
+  nets_to_train: ${nets_to_train}
+
+testing_metric:
+  _target_: src.models.matching.LocalSimilarity
+  k: 5
+  sim_threshold: 0.5
+  patch_threshold: 3
+
+checkpoint_path: ${machine.root_dir}/pretrained/gigaPose_v1.ckpt

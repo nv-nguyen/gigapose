@@ -1,0 +1,101 @@
+import numpy as np
+import trimesh
+
+
+def load_mesh(path, ORIGIN_GEOMETRY="BOUNDS"):
+    mesh = as_mesh(trimesh.load(path))
+    if ORIGIN_GEOMETRY == "BOUNDS":
+        AABB = mesh.bounds
+        center = np.mean(AABB, axis=0)
+        mesh.vertices -= center
+    return mesh
+
+
+def get_bbox_from_mesh(mesh):
+    AABB = mesh.bounds
+    OBB = AABB_to_OBB(AABB)
+    return OBB
+
+
+def get_obj_diameter(mesh_path):
+    mesh = load_mesh(mesh_path)
+    extents = mesh.extents * 2
+    return np.linalg.norm(extents)
+
+
+def get_obj_center(mesh_path):
+    mesh = as_mesh(trimesh.load(mesh_path))
+    AABB = mesh.bounds
+    center = np.mean(AABB, axis=0)
+    return center
+
+
+def as_mesh(scene_or_mesh):
+    if isinstance(scene_or_mesh, trimesh.Scene):
+        result = trimesh.util.concatenate(
+            [
+                trimesh.Trimesh(vertices=m.vertices, faces=m.faces)
+                for m in scene_or_mesh.geometry.values()
+            ]
+        )
+    else:
+        result = scene_or_mesh
+    return result
+
+
+def AABB_to_OBB(AABB):
+    """
+    AABB bbox to oriented bounding box
+    """
+    minx, miny, minz, maxx, maxy, maxz = np.arange(6)
+    corner_index = np.array(
+        [
+            minx,
+            miny,
+            minz,
+            maxx,
+            miny,
+            minz,
+            maxx,
+            maxy,
+            minz,
+            minx,
+            maxy,
+            minz,
+            minx,
+            miny,
+            maxz,
+            maxx,
+            miny,
+            maxz,
+            maxx,
+            maxy,
+            maxz,
+            minx,
+            maxy,
+            maxz,
+        ]
+    ).reshape((-1, 3))
+
+    corners = AABB.reshape(-1)[corner_index]
+    return corners
+
+
+def create_mesh_from_points(vertices, triangles, save_path):
+    import xatlas
+    vmapping, indices, uvs = xatlas.parametrize(vertices, triangles)
+    xatlas.export(save_path, vertices[vmapping], indices, uvs)
+    return trimesh.load(save_path)
+
+
+if __name__ == "__main__":
+    mesh_path = (
+        "/media/nguyen/Data/dataset/ShapeNet/ShapeNetCore.v2/"
+        "03001627/1016f4debe988507589aae130c1f06fb/models/model_normalized.obj"
+    )
+    mesh = load_mesh(mesh_path)
+    bbox = get_bbox_from_mesh(mesh)
+    # create a visualization scene with rays, hits, and mesh
+    scene = trimesh.Scene([mesh, trimesh.points.PointCloud(bbox)])
+    # display the scene
+    scene.show()

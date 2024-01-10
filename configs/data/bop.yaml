@@ -1,0 +1,19 @@
+root_dir: ${machine.root_dir}/datasets/
+source_url: https://bop.felk.cvut.cz/media/data/bop_datasets/
+source_cnos_url: https://bop.felk.cvut.cz/media/data/bop_datasets_extra/bop23_default_detections_for_task4.zip
+unzip_mode: unzip
+
+dataloader:
+  _target_: src.dataloader.test.GigaPoseTestSet
+  root_dir: ${machine.root_dir}/datasets/
+  dataset_name:
+  depth_scale: 10.0
+  transforms: ${data.transform} # transform configs
+  template_config:
+    dir: ${machine.root_dir}/datasets/templates/
+    level_templates: 1
+    pose_distribution: all
+    scale_factor: 1. # scale back to realistic renderings
+    num_templates: 162
+    image_name: OBJECT_ID/VIEW_ID.png
+    pose_name: object_poses/OBJECT_ID.npy

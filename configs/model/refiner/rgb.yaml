@@ -1,0 +1,7 @@
+model_name: megapose-1.0-RGB-multi-hypothesis
+depth_refiner:
+models_root: ${machine.root_dir}/pretrained/megapose-models/
+num_workers: ${machine.num_workers}
+batch_size_objects: 8
+batch_size_images: 512
+n_iterations: 5

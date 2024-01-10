@@ -1,0 +1,25 @@
+_target_: src.models.network.ist_net.ISTNet
+model_name: resnet
+descriptor_size: 256
+
+backbone:
+  _target_: src.models.network.resnet.ResNet
+  config:
+    n_heads: 0
+    input_dim: 3
+    input_size: 256
+    initial_dim: 128
+    block_dims: [128, 192, 256, 512]
+    descriptor_size: ${model.ist_net.descriptor_size}
+
+regressor:
+  _target_: src.models.network.ist_net.Regressor
+  descriptor_size: ${model.ist_net.descriptor_size}
+  hidden_dim: 256
+  use_tanh_act: true
+  normalize_output: true
+
+max_batch_size: 64
+
+pretrained_weights: 
+checkpoint_key: state_dict
