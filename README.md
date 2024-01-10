@@ -32,7 +32,7 @@ src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=
 
 
 ### News 📣
-- [January 11th, 2024] We released the easy access code for both training and testing. We are working on the demo for custom objects including detecting novel objects with [CNOS](https://github.com/nv-nguyen/cnos) and novel object pose estimation from a single reference image by reconstructing objects with [Wonder3D](https://github.com/xxlong0/Wonder3D). Stay tuned!
+- [January 11th, 2024] We released the code for both training and testing settings. We are working on the demo for custom objects including detecting novel objects with [CNOS](https://github.com/nv-nguyen/cnos) and novel object pose estimation from a single reference image by reconstructing objects with [Wonder3D](https://github.com/xxlong0/Wonder3D). Stay tuned!
 ## Citations
 ``` Bash
 @article{nguyen2023gigaPose,
@@ -141,7 +141,7 @@ ln -s /path/to/datasets/gso $ROOT/datasets/gso
 
 ## Testing on custom objects 
 
-Working in progress. Stay tuned!
+Working in progress...
 
 ##  Testing on [BOP datasets](https://bop.felk.cvut.cz/datasets/) :rocket:
 
