@@ -24,10 +24,18 @@ def run_train(cfg: DictConfig):
     logger.info(f"Checkpoints will be stored in: {cfg.callback.checkpoint.dirpath}")
 
     logger.info("Initializing logger, callbacks and trainer")
-    os.environ["WANDB_API_KEY"] = cfg.user.wandb_api_key
-    if cfg.machine.dryrun:
-        os.environ["WANDB_MODE"] = "offline"
-    logger.info(f"Wandb logger initialized at {cfg.save_dir}")
+    cfg_trainer = cfg.machine.trainer
+    if "WandbLogger" in cfg_trainer.logger._target_:
+        os.environ["WANDB_API_KEY"] = cfg.user.wandb_api_key
+        if cfg.machine.dryrun:
+            os.environ["WANDB_MODE"] = "offline"
+        logger.info(f"Wandb logger initialized at {cfg.save_dir}")
+    elif "TensorBoardLogger" in cfg_trainer.logger._target_:
+        tensorboard_dir = f"{cfg.save_dir}/{cfg_trainer.logger.name}"
+        os.makedirs(tensorboard_dir, exist_ok=True)
+        logger.info(f"Tensorboard logger initialized at {tensorboard_dir}")
+    else:
+        raise NotImplementedError("Only Wandb and Tensorboard loggers are supported")
     os.makedirs(cfg.save_dir, exist_ok=True)
 
     if cfg.machine.name == "slurm":

@@ -17,6 +17,6 @@ limit_test_batches:
 
 # Define callbacks
 defaults:
-  - logger: wandb
+  - logger: tensorboard
 
 callbacks: "${oc.dict.values: callback}"

@@ -16,10 +16,18 @@ logger = get_logger(__name__)
 def run_test(cfg: DictConfig):
     OmegaConf.set_struct(cfg, False)
     logger.info("Initializing logger, callbacks and trainer")
-    os.environ["WANDB_API_KEY"] = cfg.user.wandb_api_key
-    if cfg.machine.dryrun:
-        os.environ["WANDB_MODE"] = "offline"
-    logger.info(f"Wandb logger initialized at {cfg.save_dir}")
+    cfg_trainer = cfg.machine.trainer
+    if "WandbLogger" in cfg_trainer.logger._target_:
+        os.environ["WANDB_API_KEY"] = cfg.user.wandb_api_key
+        if cfg.machine.dryrun:
+            os.environ["WANDB_MODE"] = "offline"
+        logger.info(f"Wandb logger initialized at {cfg.save_dir}")
+    elif "TensorBoardLogger" in cfg_trainer.logger._target_:
+        tensorboard_dir = f"{cfg.save_dir}/{cfg_trainer.logger.name}"
+        os.makedirs(tensorboard_dir, exist_ok=True)
+        logger.info(f"Tensorboard logger initialized at {tensorboard_dir}")
+    else:
+        raise NotImplementedError("Only Wandb and Tensorboard loggers are supported")
     os.makedirs(cfg.save_dir, exist_ok=True)
 
     if cfg.disable_output:
@@ -28,11 +36,11 @@ def run_test(cfg: DictConfig):
     if cfg.machine.name == "slurm":
         num_gpus = int(os.environ["SLURM_GPUS_ON_NODE"])
         num_nodes = int(os.environ["SLURM_NNODES"])
-        cfg.machine.trainer.devices = num_gpus
-        cfg.machine.trainer.num_nodes = num_nodes
+        cfg_trainer.devices = num_gpus
+        cfg_trainer.num_nodes = num_nodes
         logger.info(f"Slurm config: {num_gpus} gpus,  {num_nodes} nodes")
 
-    trainer = instantiate(cfg.machine.trainer)
+    trainer = instantiate(cfg_trainer)
     logger.info(f"Trainer initialized!")
 
     model = instantiate(cfg.model)

@@ -1,5 +1,6 @@
-_target_:  lightning.pytorch.loggers.TensorBoardLogger
+_target_:  pytorch_lightning.loggers.TensorBoardLogger
 
 # Define logger
 save_dir: ${save_dir}/
+name: ${user.wandb_project_name}
 

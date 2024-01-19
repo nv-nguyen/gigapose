@@ -1,5 +1,10 @@
 import logging
 import os
+import wandb
+from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
+import torch
+from PIL import Image
+import numpy as np
 
 
 def get_logger(name: str):
@@ -65,3 +70,20 @@ def start_disable_output(logfile):
 def stop_disable_output(original_stdout):
     # Restore the original stdout file descriptor
     os.dup2(original_stdout, 1)
+
+
+def log_image(logger, name, path=None):
+    if isinstance(logger, WandbLogger):
+        assert isinstance(path, str), "image must be a path to an image"
+        logger.experiment.log(
+            {f"{name}": wandb.Image(path)},
+        )
+    elif isinstance(logger, TensorBoardLogger):
+        image = Image.open(path)
+        image = torch.tensor(np.array(image) / 255.0)
+        image = image.permute(2, 0, 1).float()
+        assert isinstance(image, torch.Tensor), "image must be a tensor"
+        logger.experiment.add_image(
+            f"{name}",
+            image,
+        )

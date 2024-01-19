@@ -18,6 +18,8 @@ via One Correspondence
 src="https://img.shields.io/badge/-Webpage-blue.svg?colorA=333&logo=html5" height=28em></a>
 <a href="https://arxiv.org/abs/2311.14155"><img 
 src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=28em></a>
+<a href="https://drive.google.com/file/d/11V9J4voUkovMIFxOeDCkaO7uf9EfCTZ0/view?usp=sharing"><img 
+src="https://img.shields.io/badge/-SuppMat-blue.svg?colorA=333&logo=drive" height=28em></a>
 <p></p>
 
 <p align="center">
@@ -62,7 +64,7 @@ conda activate gigapose
 bash src/scripts/install_env.sh
 
 # to install megapose
-pip install -e . 
+pip install -e .
 
 # to install bop_toolkit 
 pip install git+https://github.com/thodan/bop_toolkit.git
@@ -177,6 +179,36 @@ python bop_toolkit/scripts/eval_bop19_pose.py --renderer_type=vispy --results_pa
 
 </details>
 
+##  Novel object pose estimation from a single image on [LM-O](https://bop.felk.cvut.cz/datasets/) :smiley_cat:
+
+<p align="center">
+  <img src=./media/wonder3d_meshes.png width="100%"/>
+</p>
+
+<details><summary>Click to expand</summary>
+
+To relax the need of CAD models, we can reconstruct 3D models from a single image using recent works on diffusion-based 3D reconstruction such as [Wonder3D](https://github.com/xxlong0/Wonder3D), then apply the same pipeline as GigaPose to estimate object pose. Here are the steps to reproduce the results of novel object pose estimation from a single image on LM-O dataset:
+
+- Step 1: Selecting the input reference image for each object. We provide the list of reference images in [SuppMat](https://drive.google.com/file/d/11V9J4voUkovMIFxOeDCkaO7uf9EfCTZ0/view?usp=sharing). 
+- Step 2: Cropping the input image (and save the cropping matrix for recovering the correct scale for reconstructed 3D models).
+- Step 3: Reconstructing 3D models from the reference images using [Wonder3D](https://github.com/xxlong0/Wonder3D). Note that the reconstructed 3D models are in the coordinate frame of input image (or the object pose in the input reference image is used as the canonical frame).
+- Step 4: Recovering the scale of reconstructed 3D models using the cropping matrix of Step 2. 
+- Step 5: Estimating the object pose using GigaPose's pipeline. 
+
+We discuss the canonical frame used in BOP Toolkit for only evaluation purposes below. For real applications, we can use the object pose in the input reference image as the canonical frame.
+
+<details><summary>Click to expand</summary>
+
+### Canonical frame for bop toolkit
+
+For all evaluations, we use [bop toolkit](https://github.com/thodan/bop_toolkit.git) which requires the estimated poses defined in the same coordinate frame of GT CAD models. Therefore, there are two options:
+- Option 1: Transforming the GT CAD models to the coordinate frame of the input image and adjust the GT poses accordingly.
+- Option 2: Transforming the reconstructed 3D models to the coordinate frame of GT CAD models by assuming the object pose in the input reference image is known.
+
+Given that the metrics VSD, MSSD, MSPD employed in the [bop toolkit](https://github.com/thodan/bop_toolkit.git) rely on the canonical frame of the object, and for a meaningful comparison with [MegaPose](https://github.com/megapose6d/megapose6d) and GigaPose's results using GT CAD models, we opt Option 2. 
+</details>
+</details>
+
 ##  Training
 <p align="center">
   <img src=./media/training.png width="100%"/>
@@ -190,10 +222,10 @@ python train.py train_dataset_id=$ID
 
 </details>
 
-## License
+## 👩‍⚖️ License
 Unless otherwise specified, all code in this repository is made available under MIT license. 
 
-## Acknowledgments
+## 🤝 Acknowledgments
 This code is heavily borrowed from [MegaPose](https://github.com/megapose6d/megapose6d) and [CNOS](https://github.com/nv-nguyen/cnos). 
 
 The authors thank Jonathan Tremblay, Medéric Fourmy, Yann Labbé, Michael Ramamonjisoa and Constantin Aronssohn for their help and valuable feedbacks!

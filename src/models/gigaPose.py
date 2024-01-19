@@ -9,7 +9,7 @@ from einops import rearrange, repeat
 import pytorch_lightning as pl
 from tqdm import tqdm
 import pandas as pd
-from src.utils.logging import get_logger
+from src.utils.logging import get_logger, log_image
 from src.utils.batch import BatchedData, gather
 from src.utils.optimizer import HybridOptim
 from torchvision.utils import save_image
@@ -273,8 +273,10 @@ class GigaPose(pl.LightningModule):
                 vis_pts = plot_keypoints_batch(batch)
                 sample_path = f"{self.log_dir}/sample_rank{self.global_rank}.png"
                 save_tensor_to_image(vis_pts, sample_path)
-                self.logger.experiment.log(
-                    {f"vis/train_samples_{idx_dataset}": wandb.Image(sample_path)},
+                log_image(
+                    logger=self.logger,
+                    name=f"vis/train_samples_{idx_dataset}",
+                    path=sample_path,
                 )
 
             if self.optim_config.nets_to_train in ["ist", "all"]:
@@ -340,8 +342,10 @@ class GigaPose(pl.LightningModule):
         vis_pts = plot_keypoints_batch(batch, type_data="pred")
         sample_path = f"{self.log_dir}/{split}_sample_rank{self.global_rank}.png"
         save_tensor_to_image(vis_pts, sample_path)
-        self.logger.experiment.log(
-            {f"vis/{split}_samples": wandb.Image(sample_path)},
+        log_image(
+            logger=self.logger,
+            name=f"vis/{split}_samples",
+            path=sample_path,
         )
 
     def validation_step(self, batch, idx_batch):
@@ -603,8 +607,10 @@ class GigaPose(pl.LightningModule):
                 sample_path,
                 nrow=predictions.id_src.shape[0],
             )
-            self.logger.experiment.log(
-                {f"{dataset_name}": wandb.Image(sample_path)},
+            log_image(
+                logger=self.logger,
+                name=f"{dataset_name}",
+                path=sample_path,
             )
 
     @torch.no_grad()
