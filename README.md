@@ -192,7 +192,7 @@ To relax the need of CAD models, we can reconstruct 3D models from a single imag
 
 - Step 1: Selecting the input reference image for each object. We provide the list of reference images in [SuppMat](https://drive.google.com/file/d/11V9J4voUkovMIFxOeDCkaO7uf9EfCTZ0/view?usp=sharing). 
 - Step 2: Cropping the input image (and save the [cropping matrix](https://github.com/nv-nguyen/gigapose/blob/main/src/utils/crop.py#L49) for recovering the correct scale for reconstructed 3D models).
-- Step 3: Reconstructing 3D models from the reference images using [Wonder3D](https://github.com/xxlong0/Wonder3D). Note that the output 3D models are reconstructed in the coordinate frame of input image.
+- Step 3: Reconstructing 3D models from the reference images using [Wonder3D](https://github.com/xxlong0/Wonder3D). Note that the output 3D models are reconstructed in the coordinate frame of input image and in [orthographic camera](https://github.com/xxlong0/Wonder3D/blob/57b0e88ac45000a9cc100df2733c6cb30ce5e108/NeuS/models/dataset_mvdiff.py#L174).
 - Step 4: Recovering the scale of reconstructed 3D models using the cropping matrix of Step 2. 
 - Step 5: Estimating the object pose using GigaPose's pipeline. 
 
