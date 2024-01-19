@@ -296,7 +296,7 @@ def save_predictions_from_batched_predictions(
         for idx_sample in range(len(data["im_id"])):
             obj_id = int(data["object_id"][idx_sample])
 
-            if not is_refined and dataset_name == "lmo":
+            if not is_refined and "lmo" in dataset_name:
                 obj_id = LMO_index_to_ID[obj_id - 1]
 
             if is_only_top1:

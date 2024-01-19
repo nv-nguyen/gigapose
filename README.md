@@ -229,6 +229,11 @@ python -m src.scripts.render_custom_templates custom_dataset_name=lmoWonder3d
 python test.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
 python refine.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
 ```
+
+<p align="center">
+  <img src=./media/wonder3d_result.png width="100%"/>
+</p>
+
 </details>
 
 ##  Training
