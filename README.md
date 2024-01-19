@@ -208,7 +208,7 @@ For all evaluations, we use [bop toolkit](https://github.com/thodan/bop_toolkit.
 
 Given that the metrics VSD, MSSD, MSPD employed in the [bop toolkit](https://github.com/thodan/bop_toolkit.git) depend on the canonical frame of the object, and for a meaningful comparison with [MegaPose](https://github.com/megapose6d/megapose6d) and GigaPose's results using GT CAD models, we opt Option 2. 
 </details>
-</details>
+
 
 Once the reconstructed 3D models are in the correct scale and in the GT coordinate frame, we can now estimate the object pose using GigaPose's pipeline in Step 5:
 
@@ -229,7 +229,7 @@ python -m src.scripts.render_custom_templates custom_dataset_name=lmoWonder3d
 python test.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
 python refine.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
 ```
-
+</details>
 
 ##  Training
 <p align="center">
