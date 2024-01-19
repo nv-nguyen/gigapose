@@ -69,13 +69,13 @@ def render(cfg) -> None:
     template_poses = get_obj_poses_from_template_level(level=1, pose_distribution="all")
     template_poses[:, :3, 3] *= 0.4  # zoom to object
     for dataset_name in [
-        # "lmo",
+        "lmo",
         "tless",
-        # "tudl",
-        # "icbin",
+        "tudl",
+        "icbin",
         "itodd",
-        # "hb",
-        # "ycbv",
+        "hb",
+        "ycbv",
     ]:
         dataset_save_dir = root_save_dir / f"{dataset_name}"
         logger.info(f"Rendering templates for {dataset_name}")

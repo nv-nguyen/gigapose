@@ -58,7 +58,7 @@ class TemplateSet(Dataset):
 
     def __getitem__(self, index):
         # loading templates
-        if self.dataset_name == "lmo":
+        if "lmo" in self.dataset_name:
             label = LMO_index_to_ID[index]
         else:
             label = f"{index+1}"

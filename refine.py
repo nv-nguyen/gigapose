@@ -43,7 +43,9 @@ def run_refiner(cfg: DictConfig):
     cad_dir = root_dir / cfg.test_dataset_name / "models"
     if cfg.test_dataset_name == "tless":
         cad_dir = str(cad_dir) + "_cad"
-    object_dataset = BOPObjectDataset(Path(cad_dir))
+    object_dataset = BOPObjectDataset(
+        Path(cad_dir), format=".obj" if "Wonder3d" in cfg.test_dataset_name else ".ply"
+    )
     logger.info("Loading CAD dataset done!")
 
     refiner = Refiner(

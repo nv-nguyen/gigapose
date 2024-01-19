@@ -13,6 +13,9 @@ use_pretrained: true
 train_dataset_id: 0 # 0 for gso, 1 for shapenet, 2 for both
 nets_to_train: all
 
-# parameters for rendering templates
+# parameters for rendering templates for training
 start_idx:
 end_idx:
+
+# parameters for custom objects
+custom_dataset_name: custom

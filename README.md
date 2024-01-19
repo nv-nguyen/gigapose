@@ -34,6 +34,7 @@ src="https://img.shields.io/badge/-SuppMat-blue.svg?colorA=333&logo=drive" heigh
 
 
 ### News 📣
+- [January 19th, 2024] We released the intructions for estimating pose for custom objects and for a single reference image setting on LM-O dataset.
 - [January 11th, 2024] We released the code for both training and testing settings. We are working on the demo for custom objects including detecting novel objects with [CNOS](https://github.com/nv-nguyen/cnos) and novel object pose estimation from a single reference image by reconstructing objects with [Wonder3D](https://github.com/xxlong0/Wonder3D). Stay tuned!
 ## Citations
 ``` Bash
@@ -179,7 +180,7 @@ python bop_toolkit/scripts/eval_bop19_pose.py --renderer_type=vispy --results_pa
 
 </details>
 
-##  Novel object pose estimation from a single image on [LM-O](https://bop.felk.cvut.cz/datasets/) :smiley_cat:
+##  Pose estimation from a single image on [LM-O](https://bop.felk.cvut.cz/datasets/) :smiley_cat:
 
 <p align="center">
   <img src=./media/wonder3d_meshes.png width="100%"/>
@@ -187,15 +188,15 @@ python bop_toolkit/scripts/eval_bop19_pose.py --renderer_type=vispy --results_pa
 
 <details><summary>Click to expand</summary>
 
-To relax the need of CAD models, we can reconstruct 3D models from a single image using recent works on diffusion-based 3D reconstruction such as [Wonder3D](https://github.com/xxlong0/Wonder3D), then apply the same pipeline as GigaPose to estimate object pose. Here are the steps to reproduce the results of novel object pose estimation from a single image on LM-O dataset:
+To relax the need of CAD models, we can reconstruct 3D models from a single image using recent works on diffusion-based 3D reconstruction such as [Wonder3D](https://github.com/xxlong0/Wonder3D), then apply the same pipeline as GigaPose to estimate object pose. Here are the steps to reproduce the results of novel object pose estimation from a single image on LM-O dataset as shown in our paper:
 
 - Step 1: Selecting the input reference image for each object. We provide the list of reference images in [SuppMat](https://drive.google.com/file/d/11V9J4voUkovMIFxOeDCkaO7uf9EfCTZ0/view?usp=sharing). 
-- Step 2: Cropping the input image (and save the cropping matrix for recovering the correct scale for reconstructed 3D models).
-- Step 3: Reconstructing 3D models from the reference images using [Wonder3D](https://github.com/xxlong0/Wonder3D). Note that the reconstructed 3D models are in the coordinate frame of input image (or the object pose in the input reference image is used as the canonical frame).
+- Step 2: Cropping the input image (and save the [cropping matrix](https://github.com/nv-nguyen/gigapose/blob/main/src/utils/crop.py#L49) for recovering the correct scale for reconstructed 3D models).
+- Step 3: Reconstructing 3D models from the reference images using [Wonder3D](https://github.com/xxlong0/Wonder3D). Note that the output 3D models are reconstructed in the coordinate frame of input image.
 - Step 4: Recovering the scale of reconstructed 3D models using the cropping matrix of Step 2. 
 - Step 5: Estimating the object pose using GigaPose's pipeline. 
 
-We discuss the canonical frame used in BOP Toolkit for only evaluation purposes below. For real applications, we can use the object pose in the input reference image as the canonical frame.
+We provide [here](https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/wonder3d_inout.zip) the inputs and outputs of Wonder3D, [here](https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/wonder3d_mesh.zip) the reconstructed 3D models in Step 1-3 and, [this script](https://github.com/nv-nguyen/gigapose/blob/main/src/scripts/recover_scale_wonder3d.py) to recover 3D models in the correct scale. [Here](https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/lmoWonder3d.zip) is the reconstructed 3D models in the correct scale and in the GT coordinate frame discussed below (note that the GT canonical frame is only for evaluation purposes with BOP Toolkit, while for real applications, we can use the object pose in the input reference image as the canonical frame). 
 
 <details><summary>Click to expand</summary>
 
@@ -203,11 +204,32 @@ We discuss the canonical frame used in BOP Toolkit for only evaluation purposes 
 
 For all evaluations, we use [bop toolkit](https://github.com/thodan/bop_toolkit.git) which requires the estimated poses defined in the same coordinate frame of GT CAD models. Therefore, there are two options:
 - Option 1: Transforming the GT CAD models to the coordinate frame of the input image and adjust the GT poses accordingly.
-- Option 2: Transforming the reconstructed 3D models to the coordinate frame of GT CAD models by assuming the object pose in the input reference image is known.
+- Option 2: Reconstructing the 3D models, then transforming it to the coordinate frame of GT CAD models by assuming the object pose in the input reference image is known.
 
-Given that the metrics VSD, MSSD, MSPD employed in the [bop toolkit](https://github.com/thodan/bop_toolkit.git) rely on the canonical frame of the object, and for a meaningful comparison with [MegaPose](https://github.com/megapose6d/megapose6d) and GigaPose's results using GT CAD models, we opt Option 2. 
+Given that the metrics VSD, MSSD, MSPD employed in the [bop toolkit](https://github.com/thodan/bop_toolkit.git) depend on the canonical frame of the object, and for a meaningful comparison with [MegaPose](https://github.com/megapose6d/megapose6d) and GigaPose's results using GT CAD models, we opt Option 2. 
 </details>
 </details>
+
+Once the reconstructed 3D models are in the correct scale and in the GT coordinate frame, we can now estimate the object pose using GigaPose's pipeline in Step 5:
+
+```
+# download the reconstructed 3D models, test images, and test_targets_bop19.json
+mkdir $ROOT_DIR/datasets/lmoWonder3d
+wget https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/lmoWonder3d.zip -P $ROOT_DIR/datasets/lmoWonder3d
+unzip -j $ROOT_DIR/datasets/lmoWonder3d/lmoWonder3d.zip -d $ROOT_DIR/datasets/lmoWonder3d/models -x "*/._*"
+
+# treat lmoWonder3d as a new dataset by creating a symlink 
+ln -s $ROOT_DIR/datasets/lmo/test $ROOT_DIR/datasets/lmoWonder3d/test
+ln -s $ROOT_DIR/datasets/lmo/test_targets_bop19.json $ROOT_DIR/datasets/lmoWonder3d/test_targets_bop19.json
+
+# Onboarding by rendering templates from reconstructed 3D models
+python -m src.scripts.render_custom_templates custom_dataset_name=lmoWonder3d
+
+# now, it can be tested as a normal dataset as in the previous section
+python test.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
+python refine.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
+```
+
 
 ##  Training
 <p align="center">
