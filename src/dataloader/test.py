@@ -152,7 +152,7 @@ class GigaPoseTestSet(GigaPoseTrainSet):
                 for name in target_list_dict:
                     if name == "detection_time":
                         continue
-                    if name == "obj_id" and self.dataset_name == "lmo":
+                    if name == "obj_id" and "lmo" in self.dataset_name:
                         target_list_dict[name].append(LMO_ID_to_index[target[name]])
                     else:
                         target_list_dict[name].append(target[name])
@@ -233,7 +233,7 @@ class GigaPoseTestSet(GigaPoseTrainSet):
                 real_data, template_data, T_real2temp, T_temp2real
             )
 
-            if self.dataset_name == "lmo":
+            if "lmo" in self.dataset_name:
                 # workaround for indexing LMO: update object id to be in range(8)
                 new_labels = real_data.infos.label
                 new_labels = [str(LMO_ID_to_index[int(label)]) for label in new_labels]
@@ -257,7 +257,7 @@ class GigaPoseTestSet(GigaPoseTrainSet):
                 test_list=test_list,
             )
         else:
-            if self.dataset_name == "lmo":
+            if "lmo" in self.dataset_name:
                 # workaround for indexing LMO: update object id to be in range(8)
                 new_labels = real_data.infos.label
                 new_labels = [str(LMO_ID_to_index[int(label)]) for label in new_labels]
