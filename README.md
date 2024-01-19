@@ -230,9 +230,12 @@ python test.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
 python refine.py test_dataset_name=lmoWonder3d run_id=$NAME_RUN
 ```
 
+We provide [here](https://drive.google.com/file/d/1kowbL3EaNPma_Tell2iBLsJo1RlILSNJ/view?usp=sharing) the (coarse, refined) results with reconstructed CAD models.
+
 <p align="center">
   <img src=./media/wonder3d_result.png width="100%"/>
 </p>
+
 
 </details>
 
