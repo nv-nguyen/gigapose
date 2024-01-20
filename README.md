@@ -34,7 +34,7 @@ src="https://img.shields.io/badge/-SuppMat-blue.svg?colorA=333&logo=drive" heigh
 
 
 ### News 📣
-- [January 19th, 2024] We released the intructions for estimating pose for custom objects and for a single reference image setting on LM-O dataset.
+- [January 19th, 2024] We released the intructions for estimating pose of novel objects from a single reference image on LM-O dataset.
 - [January 11th, 2024] We released the code for both training and testing settings. We are working on the demo for custom objects including detecting novel objects with [CNOS](https://github.com/nv-nguyen/cnos) and novel object pose estimation from a single reference image by reconstructing objects with [Wonder3D](https://github.com/xxlong0/Wonder3D). Stay tuned!
 ## Citations
 ``` Bash
