@@ -44,7 +44,7 @@ src="https://img.shields.io/badge/-SuppMat-blue.svg?colorA=333&logo=drive" heigh
     booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
     year={2024}}
 ```
-GigaPose's codebase is mainly derived from [CNOS][https://github.com/nv-nguyen/cnos] and [MegaPose](https://github.com/megapose6d/megapose6d):
+GigaPose's codebase is mainly derived from [CNOS](https://github.com/nv-nguyen/cnos) and [MegaPose](https://github.com/megapose6d/megapose6d):
 ``` Bash
 @inproceedings{nguyen2023cnos,
     title={CNOS: A Strong Baseline for CAD-based Novel Object Segmentation},
