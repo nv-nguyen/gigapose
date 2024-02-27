@@ -2,19 +2,15 @@ from __future__ import annotations
 
 # Standard Library
 import os
-import time
-from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional, Union
 
 # Third Party
 from pathlib import Path
 import pandas as pd
 from torch.utils.data import Dataset
-from bop_toolkit_lib import inout, pycoco_utils
-from src.utils.dataset import LMO_index_to_ID, LMO_ID_to_index
+from bop_toolkit_lib import inout
+from src.utils.dataset import LMO_index_to_ID
 from src.custom_megapose.template_dataset import TemplateDataset, NearestTemplateFinder
 import torch
-from src.utils.bbox import BoundingBox
 import src.megapose.utils.tensor_collection as tc
 
 
@@ -89,7 +85,7 @@ if __name__ == "__main__":
     from tqdm import tqdm
     from hydra.experimental import compose, initialize
     from hydra.utils import instantiate
-    from omegaconf import DictConfig, OmegaConf
+    from omegaconf import OmegaConf
     from src.libVis.torch import inv_rgb_transform
     from torchvision.utils import save_image
 

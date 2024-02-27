@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 # Third Party
 import numpy as np
@@ -281,7 +281,6 @@ class GigaPoseTrainSet:
 
 if __name__ == "__main__":
     import time
-    import cv2
 
     from hydra.experimental import compose, initialize
     from src.utils.dataloader import NoneFilteringDataLoader
@@ -289,7 +288,7 @@ if __name__ == "__main__":
     from src.libVis.torch import plot_keypoints_batch, plot_Kabsch
 
     from hydra.utils import instantiate
-    from omegaconf import DictConfig, OmegaConf
+    from omegaconf import OmegaConf
     from src.models.ransac import RANSAC
 
     with initialize(config_path="../../configs/"):

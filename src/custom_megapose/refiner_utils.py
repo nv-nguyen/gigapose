@@ -1,10 +1,9 @@
 # Standard Library
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import Union
 import yaml
 from omegaconf import OmegaConf
 import torch
-from pathlib import Path
 import os
 import os.path as osp
 

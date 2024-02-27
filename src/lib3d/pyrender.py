@@ -3,9 +3,7 @@ import pyrender
 import trimesh
 import os
 from PIL import Image
-import numpy as np
 import os.path as osp
-from tqdm import tqdm
 import argparse
 from utils.trimesh import as_mesh
 

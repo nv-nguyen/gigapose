@@ -1,5 +1,4 @@
 import os
-import wandb
 
 os.environ["MPLCONFIGDIR"] = os.getcwd() + "./tmp/"
 import hydra
@@ -8,7 +7,7 @@ from hydra.utils import instantiate
 from src.utils.weight import load_checkpoint
 from src.utils.logging import get_logger
 import pytorch_lightning as pl
-from torch.utils.data import DataLoader, ConcatDataset
+from torch.utils.data import DataLoader
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -89,7 +88,7 @@ def run_train(cfg: DictConfig):
             prefix="",
         )
 
-    logger.info(f"Starting training")
+    logger.info("Starting training")
     trainer.fit(
         model,
         train_dataloaders=train_dataloaders,
@@ -98,7 +97,7 @@ def run_train(cfg: DictConfig):
         # if cfg.model.checkpoint_path is not None and cfg.use_pretrained
         # else None,
     )
-    logger.info(f"---" * 20)
+    logger.info("---" * 20)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,6 @@
 import torch
 import numpy as np
-from einops import rearrange, repeat
-import time
+from einops import rearrange
 
 
 class BatchedData:

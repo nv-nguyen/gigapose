@@ -3,9 +3,8 @@ import io
 import json
 import tarfile
 from functools import partial
-from hashlib import sha1
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Set, Union
+from typing import Dict, Iterator, List, Optional, Union
 
 # Third Party
 import imageio
@@ -13,13 +12,11 @@ import numpy as np
 import pandas as pd
 import webdataset as wds
 from bop_toolkit_lib import inout, pycoco_utils
-from tqdm import tqdm
 from src.megapose.lib3d.transform import Transform
 from src.utils.logging import get_logger
 from src.megapose.utils.webdataset import tarfile_to_samples
 from src.megapose.datasets.scene_dataset import (
     CameraData,
-    DataJsonType,
     IterableSceneDataset,
     ObjectData,
     ObservationInfos,

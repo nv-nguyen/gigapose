@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 # Third Party
 from pathlib import Path
@@ -21,8 +21,7 @@ from src.custom_megapose.web_scene_dataset import (
 )
 from src.custom_megapose.web_scene_dataset import IterableWebSceneDataset
 from src.custom_megapose.template_dataset import TemplateDataset, NearestTemplateFinder
-from src.dataloader.keypoints import KeypointInput, KeyPointSampler
-from src.lib3d.torch import get_relative_scale_inplane
+from src.dataloader.keypoints import KeyPointSampler
 from bop_toolkit_lib import inout
 from src.dataloader.train import GigaPoseTrainSet
 from src.utils.logging import get_logger
@@ -30,8 +29,8 @@ from src.utils.inout import (
     load_test_list_and_cnos_detections,
     load_test_list_and_init_locs,
 )
-from bop_toolkit_lib import inout, pycoco_utils
-from src.utils.dataset import LMO_index_to_ID, LMO_ID_to_index
+from bop_toolkit_lib import pycoco_utils
+from src.utils.dataset import LMO_ID_to_index
 from src.lib3d.numpy import matrix4x4
 
 logger = get_logger(__name__)
@@ -357,10 +356,9 @@ if __name__ == "__main__":
     from src.libVis.torch import plot_keypoints_batch, plot_Kabsch
     from torchvision.utils import save_image
     from hydra.utils import instantiate
-    from omegaconf import DictConfig, OmegaConf
+    from omegaconf import OmegaConf
     from src.models.ransac import RANSAC
     import logging
-    import webdataset as wds
 
     logging.basicConfig(level=logging.DEBUG)
     with initialize(config_path="../../configs/"):

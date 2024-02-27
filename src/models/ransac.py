@@ -1,6 +1,5 @@
 import torch
-from einops import einsum
-from src.lib3d.torch import affine_torch, homogenuous, apply_affine
+from src.lib3d.torch import affine_torch, apply_affine
 from src.utils.logging import get_logger
 from src.megapose.utils.tensor_collection import PandasTensorCollection
 

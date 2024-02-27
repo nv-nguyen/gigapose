@@ -63,7 +63,7 @@ def run_refiner(cfg: DictConfig):
         logger.info(f"Limiting test batches to {limit_test_batches}")
         cfg.machine.trainer.limit_test_batches = limit_test_batches
     trainer = instantiate(cfg.machine.trainer)
-    logger.info(f"Trainer initialized!")
+    logger.info("Trainer initialized!")
 
     logger.info("Refining poses ...")
     start_time = time.time()

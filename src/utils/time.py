@@ -1,6 +1,6 @@
 # credit: https://github.com/shanice-l/gdrnpp_bop2022/blob/f3ca18632f4b68c15ab3306119c364a0497282a7/lib/utils/time_utils.py#L51
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)

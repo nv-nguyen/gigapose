@@ -1,11 +1,10 @@
 import os
 import os.path as osp
-import wandb
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-from einops import rearrange, repeat
+from einops import repeat
 import pytorch_lightning as pl
 from tqdm import tqdm
 import pandas as pd
@@ -17,14 +16,12 @@ from src.utils.time import Timer
 from src.models.loss import cosine_similarity
 from src.lib3d.torch import (
     cosSin,
-    cosSin_inv,
     get_relative_scale_inplane,
     geodesic_distance,
 )
 from src.libVis.torch import (
     plot_Kabsch,
     plot_keypoints_batch,
-    inv_rgb_transform,
     save_tensor_to_image,
 )
 from src.models.poses import ObjectPoseRecovery
@@ -72,7 +69,7 @@ class GigaPose(pl.LightningModule):
         self.template_datasets = None
         self.test_dataset_name = None
 
-        logger.info(f"Initialize GigaPose done!")
+        logger.info("Initialize GigaPose done!")
 
     def warm_up_lr(self):
         for optim in self.trainer.optimizers:
@@ -151,8 +148,8 @@ class GigaPose(pl.LightningModule):
         # get the query and ref features
         src_feat = self.ae_net(batch.src_img)
         tar_feat = self.ae_net(batch.tar_img)
-        src_pts = getattr(batch, f"src_pts").clone().long()
-        tar_pts = getattr(batch, f"tar_pts").clone().long()
+        src_pts = getattr(batch, "src_pts").clone().long()
+        tar_pts = getattr(batch, "tar_pts").clone().long()
 
         loss = {}
         # select the corresponding patches
@@ -200,11 +197,11 @@ class GigaPose(pl.LightningModule):
         H, W = np.sqrt(num_patches).astype(int), np.sqrt(num_patches).astype(int)
 
         loss = {}
-        gt_relInplane = getattr(batch, f"relInplane")
-        gt_relScale = getattr(batch, f"relScale")
+        gt_relInplane = getattr(batch, "relInplane")
+        gt_relScale = getattr(batch, "relScale")
 
-        src_pts = getattr(batch, f"src_pts").clone().long()
-        tar_pts = getattr(batch, f"tar_pts").clone().long()
+        src_pts = getattr(batch, "src_pts").clone().long()
+        tar_pts = getattr(batch, "tar_pts").clone().long()
 
         preds = self.ist_net(
             src_img=batch.src_img,
@@ -321,8 +318,8 @@ class GigaPose(pl.LightningModule):
             src_mask=batch.src_mask,
             tar_mask=batch.tar_mask,
         )
-        setattr(batch, f"pred_src_pts", preds.src_pts)
-        setattr(batch, f"pred_tar_pts", preds.tar_pts)
+        setattr(batch, "pred_src_pts", preds.src_pts)
+        setattr(batch, "pred_tar_pts", preds.tar_pts)
 
         # monitor the distance between the gt and the predicted matches for same target patches
         mask = torch.logical_and(

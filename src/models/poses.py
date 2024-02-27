@@ -1,5 +1,5 @@
 import torch
-from einops import einsum, rearrange, repeat
+from einops import rearrange, repeat
 from megapose.utils.logging import get_logger
 from src.lib3d.torch import inverse_affine, normalize_affine_transform
 from src.models.ransac import RANSAC

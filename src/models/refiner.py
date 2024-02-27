@@ -44,7 +44,7 @@ class Refiner(pl.LightningModule):
         else:
             self.refined_predictions_dir = self.log_dir / "refined_predictions"
         os.makedirs(self.refined_predictions_dir, exist_ok=True)
-        logger.info(f"Init Refiner done!")
+        logger.info("Init Refiner done!")
 
     def move_to_device(self):
         self.pose_estimator.coarse_model.mesh_db.to(self.device)

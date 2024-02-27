@@ -101,7 +101,7 @@ def run_bop(cfg: DictConfig) -> None:
                 scores[name] = value[name]["bop19_average_recall"]
         logger.info(f"Results for {cfg.dataset_name}: {scores}")
     logger.info(f"Eval done in {timer.toc()} s")
-    logger.info(f"---" * 100)
+    logger.info("---" * 100)
 
 
 @hydra.main(
@@ -129,7 +129,7 @@ def run_seven_cores(cfg: DictConfig) -> None:
         logger.info(f"Eval {dataset_name}")
         cfg.dataset_name = dataset_name
         run_bop(cfg)
-        logger.info(f"---" * 100)
+        logger.info("---" * 100)
 
 
 if __name__ == "__main__":

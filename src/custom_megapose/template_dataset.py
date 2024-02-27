@@ -3,19 +3,14 @@ from __future__ import annotations
 # Standard Library
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Iterator, List, Optional, Union, Set
+from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import torch
 from tqdm import tqdm
-from scipy.spatial.distance import cdist
 
 
 # MegaPose
-from src.megapose.utils.random import make_seed
-import src.megapose.utils.tensor_collection as tc
 from src.megapose.utils.tensor_collection import PandasTensorCollection
-from src.megapose.utils.types import Resolution
-from src.megapose.datasets.scene_dataset import ObjectData
 from src.custom_megapose.transform import Transform, ScaleTransform
 from src.lib3d.numpy import R_opencv2R_opengl
 from src.lib3d.template_transform import (

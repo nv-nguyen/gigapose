@@ -46,7 +46,7 @@ def download(cfg: DictConfig) -> None:
             }
         )
         run_download(cfg_dataset)
-        logger.info(f"---" * 100)
+        logger.info("---" * 100)
 
 
 if __name__ == "__main__":

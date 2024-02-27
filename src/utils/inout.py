@@ -37,7 +37,7 @@ def create_folder(path):
 def del_folder(path):
     try:
         shutil.rmtree(path)
-    except OSError as exc:
+    except OSError:
         pass
 
 

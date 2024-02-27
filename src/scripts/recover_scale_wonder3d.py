@@ -1,7 +1,5 @@
 import numpy as np
-import os.path as osp
 import os
-import open3d as o3d
 from scipy.spatial.transform import Rotation
 import trimesh
 from pathlib import Path

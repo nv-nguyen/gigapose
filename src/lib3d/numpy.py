@@ -1,11 +1,6 @@
-import os
 import numpy as np
-import pathlib
-from src.utils.inout import get_root_project
 from scipy.spatial.transform import Rotation
 import torch
-from scipy.spatial.distance import cdist
-from src.lib3d.farthest_sampling import FPS
 
 
 def normalize(vec):

@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)

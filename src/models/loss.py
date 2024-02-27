@@ -1,7 +1,6 @@
 from torch import nn
 import torch
 import torch.nn.functional as F
-from torch import nn, einsum
 
 
 def cosine_similarity(a, b, normalize=True):

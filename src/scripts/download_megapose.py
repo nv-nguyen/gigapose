@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -20,7 +20,7 @@ def download(cfg: DictConfig) -> None:
     model_names = ["coarse-rgb-906902141", "refiner-rgb-653307694"]
     files = ["checkpoint.pth.tar", "config.yaml"]
     for model_name in model_names:
-        local_dir = root_dir / f"pretrained/megapose-models/" / model_name
+        local_dir = root_dir / "pretrained/megapose-models/" / model_name
         os.makedirs(local_dir, exist_ok=True)
 
         for file in files:

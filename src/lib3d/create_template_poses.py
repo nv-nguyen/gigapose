@@ -1,5 +1,4 @@
 # blenderproc run src/poses/create_template_poses.py
-import blenderproc
 import bpy
 import bmesh
 import math

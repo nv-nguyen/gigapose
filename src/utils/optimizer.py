@@ -1,7 +1,6 @@
 # https://github.com/Lightning-AI/lightning/issues/3346
 import torch
-from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Union
 
 
 class HybridOptim(torch.optim.Optimizer):

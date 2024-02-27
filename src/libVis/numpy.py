@@ -6,11 +6,9 @@ from skimage.morphology import binary_dilation
 import cv2
 import time
 import trimesh
-import time
 
 os.environ["MPLCONFIGDIR"] = os.getcwd() + "./tmp/"
 import matplotlib.pyplot as plt
-import matplotlib
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)

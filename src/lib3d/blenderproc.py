@@ -1,10 +1,10 @@
 import blenderproc as bproc
 import numpy as np
 import argparse
-import os, sys
+import os
+import sys
 from PIL import Image
 import logging
-import imageio
 
 
 def render_blender_proc(

@@ -9,7 +9,7 @@ from megapose.lib3d.transform import Transform
 from PIL import Image
 import os
 import argparse
-from src.utils.trimesh import get_obj_diameter, get_obj_center
+from src.utils.trimesh import get_obj_diameter
 from bop_toolkit_lib import inout
 
 if __name__ == "__main__":

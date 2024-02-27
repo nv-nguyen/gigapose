@@ -5,7 +5,7 @@ import time
 from functools import partial
 import multiprocessing
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import OmegaConf
 import glob
 from pathlib import Path
 

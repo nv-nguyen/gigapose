@@ -9,7 +9,6 @@ import hydra
 import glob
 from pathlib import Path
 from bop_toolkit_lib import inout
-import glob
 
 from src.lib3d.template_transform import get_obj_poses_from_template_level
 from src.utils.inout import save_json

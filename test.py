@@ -41,10 +41,10 @@ def run_test(cfg: DictConfig):
         logger.info(f"Slurm config: {num_gpus} gpus,  {num_nodes} nodes")
 
     trainer = instantiate(cfg_trainer)
-    logger.info(f"Trainer initialized!")
+    logger.info("Trainer initialized!")
 
     model = instantiate(cfg.model)
-    logger.info(f"Model initialized!")
+    logger.info("Model initialized!")
 
     cfg.data.test.dataloader.dataset_name = cfg.test_dataset_name
     cfg.data.test.dataloader.batch_size = cfg.machine.batch_size
@@ -77,7 +77,7 @@ def run_test(cfg: DictConfig):
 
     if cfg.disable_output:
         stop_disable_output(log)
-    logger.info(f"Done!")
+    logger.info("Done!")
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ def download(cfg: DictConfig) -> None:
         logger.info(f"Downloading {dataset_name}")
         models_info_url = f"{cfg_data.source_url}/bop23_datasets/megapose-{dataset_name}/{dataset_name}_models.json"
         models_info_path = (
-            cfg_data.root_dir / dataset_name / f"models_info.json"
+            cfg_data.root_dir / dataset_name / "models_info.json"
         )
         key_to_shard_url = f"{cfg_data.source_url}/bop23_datasets/megapose-{dataset_name}/train_pbr_web/key_to_shard.json"
         key_to_shard_path = (
@@ -53,7 +53,7 @@ def download(cfg: DictConfig) -> None:
             }
         )
         run_download(cfg_dataset)
-        logger.info(f"---" * 100)
+        logger.info("---" * 100)
 
 
 if __name__ == "__main__":
