@@ -118,12 +118,12 @@ def run_seven_cores(cfg: DictConfig) -> None:
     os.makedirs(cfg.results_dir, exist_ok=True)
 
     for dataset_name in [
-        # "lmo",
-        # "tudl",
-        # "icbin",
-        # "tless",
-        # "ycbv",
-        # "itodd",  # gt not available
+        "lmo",
+        "tudl",
+        "icbin",
+        "tless",
+        "ycbv",
+        "itodd",  # gt not available
         "hb", # gt not available
     ]:
         logger.info(f"Eval {dataset_name}")
