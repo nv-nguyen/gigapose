@@ -353,7 +353,7 @@ def set_texture_visii(
     max_distance=10,
     res_texture=1024,
 ):
-    mesh = meshes[f"obj_{int(obj_label):06d}"]
+    mesh = meshes[obj_label]
     distance = np.zeros(len(mesh.vertices))
     points_gt, points_pred = [], []
     for i, vertex in enumerate(mesh.vertices):
@@ -374,7 +374,6 @@ def set_texture_visii(
         distance = np.append(distance, [max_distance])
     distance /= max_distance
     colors = get_cmap(distance, "turbo")
-    c_vis = trimesh.visual.ColorVisuals(mesh, vertex_colors=colors[:-2])
     texture = get_texture_distance(
         colors,
         mesh,
@@ -408,9 +407,9 @@ def reset_visii(reset_names):
         obj_visii = visii.entity.get(names)
         obj_visii.get_transform().set_position(
             visii.vec3(
-                -1000,
-                -1000,
-                -1000,
+                -10000,
+                -10000,
+                -10000,
             )
         )
 
@@ -420,39 +419,7 @@ if __name__ == "__main__":
     results_dir = Path("/home/nguyen/Documents/datasets/bop23_report")
     run_visii = True
 
-    selected_image_keys = {
-        "lmo": [
-            "000002_000217",
-            "000002_000263",
-            "000002_000283",
-            "000002_000310",
-            "000002_000402",
-        ],
-        "tudl": [
-            "000001_001166",
-            "000001_000457",
-            "000003_001200",
-            "000003_001400",
-            "000003_001030",
-        ],
-        "ycbv": [
-            "000059_000242",
-            "000058_000940",
-            "000057_001099",
-            "000049_000629",
-            "000051_000532",
-        ],
-        "tless": [
-            "000007_000155",
-            "000007_000285",
-            "000002_000214",
-            "000005_000070",
-            "000001_000181",
-            "000016_000161",
-            "000016_000231",
-        ],
-    }
-    for dataset_name in ["ycbv"]:  # "lmo", "tudl",
+    for dataset_name in ["tless"]:  # "lmo", "tudl",
         if dataset_name == "ycbv":
             symmetry_obj_ids = [13, 18, 19, 20]
         elif dataset_name == "lmo":
@@ -534,25 +501,24 @@ if __name__ == "__main__":
             cad_path = {}
             for model_info in tqdm(model_infos):
                 obj_id = int(model_info["obj_id"])
-                obj_label = f"obj_{obj_id:06d}"
                 cad_eval_path = (
-                    (cad_eval_dir / obj_label).with_suffix(".ply").as_posix()
+                    (cad_eval_dir / f"obj_{obj_id:06d}").with_suffix(".ply").as_posix()
                 )
-                cad_path[obj_label] = cad_eval_path
+                cad_path[str(obj_id)] = cad_eval_path
                 add_obj(
                     scale=0.1,
-                    name=obj_label,
+                    name=str(obj_id),
                     cad_path=cad_eval_path,
                     texture_path=None,
                 )
-                obj_visii = visii.entity.get(obj_label)
+                obj_visii = visii.entity.get(str(obj_id))
 
                 # init far
                 obj_visii.get_transform().set_position(
                     visii.vec3(
-                        -1000,
-                        -1000,
-                        -1000,
+                        -10000,
+                        -10000,
+                        -10000,
                     )
                 )
 
@@ -564,10 +530,10 @@ if __name__ == "__main__":
                     ),
                     save_path=new_cad_path,
                 )
-                meshes[str(obj_label)] = mesh
+                meshes[str(obj_id)] = mesh
 
                 vertices = load_mesh(new_cad_path).apply_scale(0.1).vertices
-                mesh_vertices[obj_label] = np.array(vertices)
+                mesh_vertices[str(obj_id)] = np.array(vertices)
 
             logging.info(f"Setting up {len(model_infos)} objects for VISII !")
 
@@ -577,23 +543,23 @@ if __name__ == "__main__":
             & set(estimates["gpose"].keys())
             & set(test_list.keys())
         )
-        # if not run_visii:
-
-        # else:
-        #     avail_keys = selected_image_keys[dataset_name]
         visii_obj_names = []
         for image_key in tqdm(avail_keys, desc="Rendering"):
             try:
                 test_samples = test_list[image_key]
                 # skip scene that have multiple instances of same object ID
-                if len(set([obj["obj_id"] for obj in test_samples])) != len(test_samples):
+                if len(set([obj["obj_id"] for obj in test_samples])) != len(
+                    test_samples
+                ):
                     continue
 
                 scene_id, im_id = test_samples[0]["scene_id"], test_samples[0]["im_id"]
                 img_path = dataset_dir / split / f"{scene_id:06d}/rgb/{im_id:06d}.png"
                 img = Image.open(img_path)
 
-                gt_info_path = dataset_dir / split / f"{scene_id:06d}/scene_gt_info.json"
+                gt_info_path = (
+                    dataset_dir / split / f"{scene_id:06d}/scene_gt_info.json"
+                )
                 gt_info = inout.load_json(gt_info_path)[f"{im_id}"]
                 gt_cam_path = dataset_dir / split / f"{scene_id:06d}/scene_camera.json"
                 gt_cam = inout.load_json(gt_cam_path)[f"{im_id}"]
@@ -608,7 +574,9 @@ if __name__ == "__main__":
                 ]
                 # sort objects by translation to camera
                 gt = sorted(gt, key=lambda x: -np.linalg.norm(x["cam_t_m2c"]))
-                scene_infos = ObservationInfos(scene_id=str(scene_id), view_id=str(im_id))
+                scene_infos = ObservationInfos(
+                    scene_id=str(scene_id), view_id=str(im_id)
+                )
                 pred_object_datas = {}
                 count = {}
                 for method, estimate in estimates.items():
@@ -658,7 +626,9 @@ if __name__ == "__main__":
                 # camera = visii.entity.get("camera")
                 if run_visii:
                     set_intrinsic(
-                        camera=visii_camera, K=scene_obs.camera_data.K, img_size=img.size
+                        camera=visii_camera,
+                        K=scene_obs.camera_data.K,
+                        img_size=img.size,
                     )
 
                 pred_reset_names = []
@@ -676,7 +646,7 @@ if __name__ == "__main__":
                                 add_obj(
                                     scale=0.1,
                                     name=obj_label + f"_{method}",
-                                    cad_path=cad_path[f"obj_{int(obj_id):06d}"],
+                                    cad_path=cad_path[obj_label],
                                     texture_path=None,
                                 )
                                 visii_obj_names.append(obj_label + f"_{method}")
@@ -684,7 +654,7 @@ if __name__ == "__main__":
                                 add_obj(
                                     scale=0.1,
                                     name=obj_label + "_gt",
-                                    cad_path=cad_path[f"obj_{int(obj_id):06d}"],
+                                    cad_path=cad_path[obj_label],
                                     texture_path=None,
                                 )
                                 visii_obj_names.append(obj_label + "_gt")
@@ -701,7 +671,9 @@ if __name__ == "__main__":
                                 color=visii.vec3(1, 0, 0),
                             )
 
-                            gt_obj_pose = object_datas[idx_obj].TWO.toHomogeneousMatrix()
+                            gt_obj_pose = object_datas[
+                                idx_obj
+                            ].TWO.toHomogeneousMatrix()
                             gt_obj_pose[:3, 3] *= 1000
                             gt_obj_visii = visii.entity.get(obj_label + "_gt")
                             set_object_pose(
@@ -731,7 +703,9 @@ if __name__ == "__main__":
                             samples_per_pixel=300,
                             file_path=f"{save_path}_heatmap_{method}.png",
                         )
-                        img = Image.open(f"{save_path}_heatmap_{method}.png").convert("RGB")
+                        img = Image.open(f"{save_path}_heatmap_{method}.png").convert(
+                            "RGB"
+                        )
                         vis_imgs.append(np.array(img))
                         reset_visii(reset_names=gt_reset_names)
 
@@ -748,7 +722,9 @@ if __name__ == "__main__":
                 names = ["gt", "gpose", "genflow"]
                 overlay_imgs = []
                 for idx, obj_datas in enumerate(list_object_datas):
-                    gray = cv2.cvtColor(np.array(scene_obs.rgb.copy()), cv2.COLOR_RGB2GRAY)
+                    gray = cv2.cvtColor(
+                        np.array(scene_obs.rgb.copy()), cv2.COLOR_RGB2GRAY
+                    )
                     gray = cv2.cvtColor(gray, cv2.COLOR_GRAY2RGB)
                     for obj_data in obj_datas:
                         camera_data_, obj_data_ = convert_scene_observation_to_panda3d(
