@@ -509,8 +509,8 @@ class GigaPose(pl.LightningModule):
             tar_feat=tar_ae_features,
             src_masks=src_masks,
             tar_mask=batch.tar_mask,
-            max_batch_size=32
-            if len(template_data.poses) >= 20
+            max_batch_size=4
+            if len(template_data.poses) >= 8
             else None,  # batching to avoid memory issue
         )
         predictions.infos = batch.infos

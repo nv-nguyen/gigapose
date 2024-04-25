@@ -23,7 +23,7 @@ def convert_scene_to_imagewise(
     in bop-imagewise format.
     :param image_tkey: Template path containing the string '{image_id}'.
     """
-    if "hb" in str(input_scene_dir) or "itodd" in str(input_scene_dir):
+    if "hb" in str(input_scene_dir) or "itodd" in str(input_scene_dir) or "hope" in str(input_scene_dir):
         gt_available = False
         print("No GT available")
     else:

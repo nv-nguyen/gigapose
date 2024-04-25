@@ -101,7 +101,7 @@ class TemplateData:
             for view_id, inplane in zip(view_ids, inplanes):
                 view_data = self.load_template(view_id, inplane=inplane)
                 rgba = torch.from_numpy(view_data["rgba"] / 255).float()
-                depth = torch.from_numpy(view_data["depth"]).float()
+                depth = torch.from_numpy(np.float32(view_data["depth"])).float()
                 box = torch.from_numpy(view_data["box"]).long()
                 data["rgba"].append(rgba)
                 data["depth"].append(depth)
