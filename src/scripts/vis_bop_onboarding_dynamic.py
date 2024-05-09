@@ -1,7 +1,7 @@
 """
 Usage:
 pip install pyrender trimesh opencv-python scikit-image tqdm distinctipy
-python src/scripts/vis_bop_onboarding_dynamic.py --dataset_dir /home/nguyen/Documents/datasets/gigaPose_datasets/datasets/hope --split test_extension 
+python -m src.scripts.vis_bop_onboarding_dynamic 
 """
 
 from PIL import Image
