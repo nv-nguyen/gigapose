@@ -21,8 +21,12 @@ def run_download(config: DictConfig) -> None:
     logger.info(f"Dataset downloaded to {local_dir}")
 
     # unzip the dataset
-    os.system(f"export LOCAL_DIR={config.data.test.dataloader.root_dir}")
-    os.system(f"export NAME={config.test_dataset_name}")
+    logger.info(f"export LOCAL_DIR={config.data.test.dataloader.root_dir}")
+    os.environ["LOCAL_DIR"] = config.data.test.dataloader.root_dir
+
+    logger.info(f"export NAME={config.test_dataset_name}")
+    os.environ['NAME'] = config.test_dataset_name
+
     unzip_cmd = "bash src/scripts/extract_bop.sh"
     logger.info(f"Running {unzip_cmd}")
     os.system(unzip_cmd)
