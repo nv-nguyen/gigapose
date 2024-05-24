@@ -81,11 +81,8 @@ pip install git+https://github.com/thodan/bop_toolkit.git
 
 ### Checkpoints
 ```
-# download testing datasets of BOP challenge
-python -m src.scripts.download_test
-
-# download cnos detections
-python -m src.scripts.download_cnos
+# download cnos detections for BOP'23 dataset
+python -m src.scripts.download_cnos_bop23
 
 # download gigaPose's checkpoints 
 python -m src.scripts.download_gigapose
@@ -96,12 +93,20 @@ python -m src.scripts.download_megapose
 
 ### Datasets
 All datasets are defined in [BOP format](https://bop.felk.cvut.cz/datasets/). 
+
+For [BOP challenge 2024](https://bop.felk.cvut.cz/challenges/bop-challenge-2024/) core datasets (HOPE, HANDAL, HOT-3D), download each dataset with the following command:
+```
+pip install -U "huggingface_hub[cli]"
+export DATASET_NAME=hope
+python -m src.scripts.download_test_bop24 test_dataset_name=$DATASET_NAME
+```
+
+For [BOP challenge 2023](https://bop.felk.cvut.cz/challenges/bop-challenge-2023/) core datasets (LMO, TLESS, TUDL, ICBIN, ITODD, HB, and TLESS), download all datasets with the following command:
 ```
 # download testing images and CAD models
-python -m src.scripts.download_test
+python -m src.scripts.download_test_bop23
 
-# download cnos detections
-python -m src.scripts.download_cnos
+
 ```
 
 We provide the pre-rendered templates (from [this link](https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/templates.zip)) and also the code to render the templates from the CAD models.
@@ -117,6 +122,8 @@ Here is the structure of $ROOT_DIR after downloading all the above files:
 ```
 ├── $ROOT_DIR
     ├── datasets/ 
+      ├── cnos-fastsam/ 
+      ├── cnos-sam/ 
       ├── lmo/ 
       ├── ... 
       ├── templates/
