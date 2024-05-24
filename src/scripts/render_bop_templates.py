@@ -33,9 +33,9 @@ def call_render(
 
     gpus_device = idx_obj % num_gpus
     os.makedirs(output_dir, exist_ok=True)
-    if use_blenderProc: # TODO: remove blenderProc
+    if use_blenderProc:  # TODO: remove blenderProc
         command = f"blenderproc run ./src/lib3d/blenderproc.py {cad_path} {obj_pose_path} {output_dir} {gpus_device}"
-    else: # TODO: understand why this is not working for tless and itodd
+    else:  # TODO: understand why this is not working for tless and itodd
         command = f"python -m src.custom_megapose.call_panda3d {cad_path} {obj_pose_path} {output_dir} {gpus_device}"
 
     if disable_output:
@@ -68,7 +68,7 @@ def render(cfg) -> None:
     root_save_dir = root_dir / "templates"
     template_poses = get_obj_poses_from_template_level(level=1, pose_distribution="all")
     template_poses[:, :3, 3] *= 0.4  # zoom to object
-    for dataset_name in [
+    bop23_datasets = [
         "lmo",
         "tless",
         "tudl",
@@ -76,7 +76,12 @@ def render(cfg) -> None:
         "itodd",
         "hb",
         "ycbv",
-    ]:
+    ]
+    if cfg.test_dataset_name is None:
+        datasets = bop23_datasets
+    else:
+        datasets = [cfg.test_dataset_name]
+    for dataset_name in datasets:
         dataset_save_dir = root_save_dir / f"{dataset_name}"
         logger.info(f"Rendering templates for {dataset_name}")
         os.makedirs(dataset_save_dir, exist_ok=True)

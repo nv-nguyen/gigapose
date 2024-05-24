@@ -105,11 +105,14 @@ For [BOP challenge 2023](https://bop.felk.cvut.cz/challenges/bop-challenge-2023/
 ```
 # download testing images and CAD models
 python -m src.scripts.download_test_bop23
-
-
 ```
 
-We provide the pre-rendered templates (from [this link](https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/templates.zip)) and also the code to render the templates from the CAD models.
+For [BOP challenge 2024](https://bop.felk.cvut.cz/challenges/bop-challenge-2024/) core datasets (HOPE, HANDAL, HOT-3D), render the templates from the CAD models:
+```
+python -m src.scripts.render_bop_templates test_dataset_name=hope
+```
+
+For [BOP challenge 2023](https://bop.felk.cvut.cz/challenges/bop-challenge-2023/) core datasets (LMO, TLESS, TUDL, ICBIN, ITODD, HB, and TLESS), we provide the pre-rendered templates (from [this link](https://huggingface.co/datasets/nv-nguyen/gigaPose/resolve/main/templates.zip)) and also the code to render the templates from the CAD models.
 ```
 # option 1: download pre-rendered templates 
 python -m src.scripts.download_bop_templates

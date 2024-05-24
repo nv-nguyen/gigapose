@@ -156,7 +156,7 @@ class LocalSimilarity(torch.nn.Module):
                 idx_tar2src=idx_tar2src,
             )
         else:
-            mask_cycle = torch.ones_like(t_mask)
+            raise ValueError("patch_threshold must be greater than 0")
 
         mask_tar2src = torch.gather(src_mask, 1, idx_tar2src)
         mask_non_zero = (

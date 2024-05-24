@@ -17,5 +17,8 @@ nets_to_train: all
 start_idx:
 end_idx:
 
+# name for rendering templates
+test_dataset_name: # let it empty for BOP'23 dataset and set to hope, handal, hot3d for BOP'24 datasets
+
 # parameters for custom objects
 custom_dataset_name: custom

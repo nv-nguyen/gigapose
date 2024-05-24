@@ -25,7 +25,6 @@ def convert_scene_to_imagewise(
     """
     if "hb" in str(input_scene_dir) or "itodd" in str(input_scene_dir) or "hope" in str(input_scene_dir):
         gt_available = False
-        print("No GT available")
     else:
         gt_available = True
     scene_data = bop_scenewise.load_scene_data(
