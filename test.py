@@ -64,6 +64,7 @@ def run_test(cfg: DictConfig):
 
     model.template_datasets = {cfg.test_dataset_name: template_dataset}
     model.test_dataset_name = cfg.test_dataset_name
+    model.max_num_dets_per_forward = cfg.max_num_dets_per_forward
     if cfg.run_id is None:
         model.run_id = wandb.run.id
     else:

@@ -42,6 +42,7 @@ class GigaPose(pl.LightningModule):
         optim_config,
         log_interval,
         log_dir,
+        max_num_dets_per_forward=None,
         **kwargs,
     ):
         # define the network
@@ -51,6 +52,8 @@ class GigaPose(pl.LightningModule):
         self.ist_net = ist_net
         self.training_loss = training_loss
         self.testing_metric = testing_metric
+
+        self.max_num_dets_per_forward = max_num_dets_per_forward
 
         self.log_interval = log_interval
         self.log_dir = log_dir
@@ -362,7 +365,8 @@ class GigaPose(pl.LightningModule):
                     continue
                 if name == "rgb":
                     templates = template_dataset[idx].rgb.to(self.device)
-                    template_data[name].append(templates)
+                    if self.max_num_dets_per_forward is None:
+                        template_data[name].append(templates)
 
                     ae_features = self.ae_net(templates)
                     template_data["ae_features"].append(ae_features)
@@ -372,7 +376,8 @@ class GigaPose(pl.LightningModule):
                 else:
                     tmp = getattr(template_dataset[idx], name)
                     template_data[name].append(tmp.to(self.device))
-
+        if self.max_num_dets_per_forward is not None:
+            names.remove("rgb")
         for name in names:
             template_data[name].stack()
             template_data[name] = template_data[name].data
@@ -477,8 +482,8 @@ class GigaPose(pl.LightningModule):
         idx_batch,
         dataset_name,
         sort_pred_by_inliers=True,
-        use_gt_inpScale=False,
     ):
+        torch.cuda.empty_cache()
         # prepare template data
         if dataset_name not in self.template_datas:
             self.set_template_data(dataset_name)
@@ -489,57 +494,72 @@ class GigaPose(pl.LightningModule):
 
         B, C, H, W = batch.tar_img.shape
         device = batch.tar_img.device
-        idx_sample = torch.arange(0, B, device=device)
 
-        # compute target features
-        tar_ae_features = self.ae_net(batch.tar_img)
-        tar_ist_features = self.ist_net.forward_by_chunk(batch.tar_img)
-        tar_label_np = np.asarray(batch.infos.label).astype(np.int32)
-        tar_label = torch.from_numpy(tar_label_np).to(device)
+        # if low_memory_mode, two detections are forward at a time
+        list_idx_sample = []
+        if self.max_num_dets_per_forward is not None:
+            for start_idx in np.arange(0, B, self.max_num_dets_per_forward):
+                end_idx = min(start_idx + self.max_num_dets_per_forward, B)
+                idx_sample_ = torch.arange(start_idx, end_idx, device=device)
+                list_idx_sample.append(idx_sample_)
+        else:
+            idx_sample = torch.arange(0, B, device=device)
+            list_idx_sample.append(idx_sample)
 
-        # template data
-        src_ae_features = template_data.ae_features[tar_label - 1]
-        src_ist_features = template_data.ist_features[tar_label - 1]
-        src_masks = template_data.mask[tar_label - 1]
+        for idx_sub_batch, idx_sample in enumerate(list_idx_sample):
+            # compute target features
+            tar_ae_features = self.ae_net(batch.tar_img[idx_sample])
+            tar_label_np = np.asarray(
+                batch.infos.label[idx_sample.cpu().numpy()]
+            ).astype(np.int32)
+            tar_label = torch.from_numpy(tar_label_np).to(device)
 
-        # Step 1: Nearest neighbor search
-        self.timer.tic()
-        predictions = self.testing_metric.test(
-            src_feats=src_ae_features,
-            tar_feat=tar_ae_features,
-            src_masks=src_masks,
-            tar_mask=batch.tar_mask,
-            max_batch_size=4
-            if len(template_data.poses) >= 8
-            else None,  # batching to avoid memory issue
-        )
-        predictions.infos = batch.infos
+            # template data
+            src_ae_features = template_data.ae_features[tar_label - 1]
+            src_masks = template_data.mask[tar_label - 1]
+
+            # Step 1: Nearest neighbor search
+            self.timer.tic()
+            predictions_ = self.testing_metric.test(
+                src_feats=src_ae_features,
+                tar_feat=tar_ae_features,
+                src_masks=src_masks,
+                tar_mask=batch.tar_mask[idx_sample],
+                max_batch_size=None,
+            )
+            predictions_.infos = batch.infos
+            if idx_sub_batch == 0:
+                predictions = predictions_
+            else:
+                predictions.cat_df(predictions_)
 
         # Step 2: Find affine transforms
         num_patches = predictions.src_pts.shape[2]
         k = self.testing_metric.k
         pred_scales = torch.zeros(B, k, num_patches, device=device)
-        if use_gt_inpScale:
-            pred_inplanes = torch.zeros(B, k, num_patches, device=device)
-        else:
-            pred_cosSin_inplanes = torch.zeros(B, k, num_patches, 2, device=device)
+        pred_cosSin_inplanes = torch.zeros(B, k, num_patches, 2, device=device)
 
         self.timer.tic()
         for idx_k in range(k):
+            idx_sample = torch.arange(0, B, device=device)
             idx_views = [idx_sample, predictions.id_src[:, idx_k]]
-            if use_gt_inpScale:  # for debugging
-                pred_scale, pred_inplane = get_relative_scale_inplane(
-                    src_M=template_data.M[tar_label - 1][idx_views],
-                    src_K=template_data.K[tar_label - 1],
-                    src_pose=template_data.poses[tar_label - 1][idx_views],
-                    tar_M=batch.tar_M,
-                    tar_K=batch.tar_K,
-                    tar_pose=batch.tar_pose,
-                )
 
-                pred_scales[:, idx_k] = repeat(pred_scale, "b -> b N", N=num_patches)
-                pred_inplanes[:, idx_k] = repeat(
-                    pred_inplane, "b -> b N", N=num_patches
+            tar_label_np = np.asarray(batch.infos.label).astype(np.int32)
+            tar_label = torch.from_numpy(tar_label_np).to(device)
+
+            src_ist_features = template_data.ist_features[tar_label - 1]
+            tar_ist_features = self.ist_net.forward_by_chunk(batch.tar_img[idx_sample])
+
+            if self.max_num_dets_per_forward is not None:
+                (
+                    pred_scales[:, idx_k],
+                    pred_cosSin_inplanes[:, idx_k],
+                ) = self.ist_net.inference_by_chunk(
+                    src_feat=src_ist_features[idx_views],
+                    tar_feat=tar_ist_features,
+                    src_pts=predictions.src_pts[:, idx_k],
+                    tar_pts=predictions.tar_pts[:, idx_k],
+                    max_batch_size=self.max_num_dets_per_forward,
                 )
             else:
                 (
@@ -551,10 +571,11 @@ class GigaPose(pl.LightningModule):
                     src_pts=predictions.src_pts[:, idx_k],
                     tar_pts=predictions.tar_pts[:, idx_k],
                 )
+
         predictions.register_tensor("relScale", pred_scales)
         predictions.register_tensor(
             "relInplane",
-            pred_inplanes if use_gt_inpScale else pred_cosSin_inplanes,
+            pred_cosSin_inplanes,
         )
         times["neighbor_search"] = self.timer.toc()
         self.timer.reset()
@@ -590,7 +611,7 @@ class GigaPose(pl.LightningModule):
             predictions, test_list=batch.test_list, time=total_time, save_path=save_path
         )
 
-        if idx_batch % self.log_interval == 0:
+        if idx_batch % self.log_interval == 0 and self.max_num_dets_per_forward is None:
             vis_img = self.vis_retrieval(
                 template_data=template_data,
                 batch=batch,

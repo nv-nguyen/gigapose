@@ -141,6 +141,12 @@ class PandasTensorCollection(TensorCollection):
         assert len(infos) == len(self.infos)
         assert (infos.index == self.infos.index).all()
         return PandasTensorCollection(infos=infos, **self.tensors)
+    
+    def cat_df(self, df):
+        for k, t in self._tensors.items():
+            t = torch.cat([t, df._tensors[k]], dim=0)
+            self._tensors[k] = t
+        return PandasTensorCollection(infos=self.infos, **self.tensors)
 
     def clone(self):
         tensors = super().clone().tensors

@@ -17,3 +17,4 @@ disable_output: false
 
 # for refinement
 use_multiple: true
+max_num_dets_per_forward: 4 # set None to disable, 2 is the minimum when enabled

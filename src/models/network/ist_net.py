@@ -67,6 +67,33 @@ class ISTNet(pl.LightningModule):
             "inplane": cos_sin_inplane,
         }
 
+    def inference_by_chunk(
+        self,
+        src_feat,
+        tar_feat,
+        src_pts,
+        tar_pts,
+        max_batch_size,
+    ):
+        batch_src_feat = BatchedData(batch_size=max_batch_size, data=src_feat)
+        batch_tar_feat = BatchedData(batch_size=max_batch_size, data=tar_feat)
+        batch_src_pts = BatchedData(batch_size=max_batch_size, data=src_pts)
+        batch_tar_pts = BatchedData(batch_size=max_batch_size, data=tar_pts)
+
+        pred_scales = BatchedData(batch_size=max_batch_size)
+        pred_cosSin_inplanes = BatchedData(batch_size=max_batch_size)
+
+        for idx_sample in range(len(batch_src_feat)):
+            pred_scales_, pred_cosSin_inplanes_ = self.inference(
+                batch_src_feat[idx_sample],
+                batch_tar_feat[idx_sample],
+                batch_src_pts[idx_sample],
+                batch_tar_pts[idx_sample],
+            )
+            pred_scales.cat(pred_scales_)
+            pred_cosSin_inplanes.cat(pred_cosSin_inplanes_)
+        return pred_scales.data, pred_cosSin_inplanes.data
+
     def inference(self, src_feat, tar_feat, src_pts, tar_pts):
         src_feat_ = gather(src_feat, src_pts.clone())
         tar_feat_ = gather(tar_feat, tar_pts.clone())
