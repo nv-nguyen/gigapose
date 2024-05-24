@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import torch
+from tqdm import tqdm
 
 # MegaPose
 import src.megapose.utils.tensor_collection as tc
@@ -52,6 +53,7 @@ class GigaPoseTestSet(GigaPoseTrainSet):
         depth_scale,
         template_config,
         transforms,
+        test_setting,
         load_gt=True,
         init_loc_path=None,  # for refinement
     ):
@@ -81,30 +83,71 @@ class GigaPoseTestSet(GigaPoseTrainSet):
             model_infos, template_config
         )
         self.template_finder = NearestTemplateFinder(template_config)
-        self.load_detections()
+
+        # depending on setting:
+        # 1. localization: load target_objects
+        # 2. detection: not target_objects
+        assert test_setting in [
+            "localization",
+            "detection",
+        ], f"{test_setting} not supported!"
+        self.load_detections(test_setting=test_setting)
         if init_loc_path is not None:
-            self.load_init_loc(init_loc_path)
+            self.load_init_loc(init_loc_path, test_setting)
             logger.info("Loaded init loc for refinement!")
         self.load_gt = load_gt
 
         # keypoint sampler
         self.keypoint_sampler = KeyPointSampler()
 
-    def load_detections(self):
+    def load_detections(self, test_setting):
+        if test_setting == "localization":
+            max_det_per_object_id = 32 if self.dataset_name == "icbin" else 16
+        else:
+            max_det_per_object_id = None
         self.test_list, self.cnos_dets = load_test_list_and_cnos_detections(
             self.root_dir,
             self.dataset_name,
-            max_det_per_object_id=32 if self.dataset_name == "icbin" else 16,
+            test_setting,
+            max_det_per_object_id=max_det_per_object_id,
         )
 
-    def load_init_loc(self, init_loc_path):
+    def load_init_loc(self, init_loc_path, test_setting, min_score=0.25):
         (
             self.test_list,
             self.init_locs,
             self.num_hypothesis,
         ) = load_test_list_and_init_locs(
-            self.root_dir, self.dataset_name, init_loc_path
+            self.root_dir, self.dataset_name, init_loc_path, test_setting
         )
+        new_init_locs = {}
+        init_number_locs, filtered_number_locs = 0, 0
+        # drop instance_id having low confidence score
+        for image_key in tqdm(self.init_locs, desc="Filtering init locs"):
+            image_locs = self.init_locs[image_key]
+            init_number_locs += len(image_locs)
+            # group by instance_id
+            image_locs_by_instance_id = {}
+            for loc in image_locs:
+                instance_id = loc["instance_id"]
+                if instance_id not in image_locs_by_instance_id:
+                    image_locs_by_instance_id[instance_id] = []
+                image_locs_by_instance_id[instance_id].append(loc)
+
+            new_image_locs = []
+            for instance_id in image_locs_by_instance_id:
+                locs = image_locs_by_instance_id[instance_id]
+                best_score = max([loc["score"] for loc in locs])
+                if best_score < min_score:
+                    continue
+                new_image_locs.extend(locs)
+                filtered_number_locs += len(locs)
+            if len(new_image_locs) == 0:
+                logger.warning(f"Image key {image_key} has no locs!")
+                new_image_locs = image_locs
+            new_init_locs[image_key] = new_image_locs
+        self.init_locs = new_init_locs
+        logger.info(f"Drop from {init_number_locs} to {filtered_number_locs} locs!")
         if self.num_hypothesis == 1:
             self.instance_id_counter = 0
         logger.info(f"Loaded {self.num_hypothesis} init locs!")

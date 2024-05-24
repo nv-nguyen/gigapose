@@ -9,6 +9,8 @@ from src.utils.logging import get_logger
 from src.custom_megapose.refiner_utils import load_pretrained_refiner
 from src.utils.inout import save_predictions_from_batched_predictions
 from src.utils.time import Timer
+import pandas as pd
+import torch
 
 logger = get_logger(__name__)
 
@@ -23,6 +25,7 @@ class Refiner(pl.LightningModule):
         test_dataset_name,
         coarse_model_name,
         run_id,
+        max_num_dets_per_forward=50,
         **kwargs,
     ):
         # define the network
@@ -38,6 +41,8 @@ class Refiner(pl.LightningModule):
         self.use_average_score = True
         self.timer = Timer()
         os.makedirs(self.log_dir, exist_ok=True)
+
+        self.max_num_dets_per_forward = max_num_dets_per_forward
 
         if self.use_multiple:
             self.refined_predictions_dir = self.log_dir / "refined_multiple_predictions"
@@ -58,33 +63,62 @@ class Refiner(pl.LightningModule):
         self.pose_estimator.to(self.device)
         logger.info(f"Moving models to {self.device} done!")
 
+    def sub_sample_infos(self, infos, idx_sample):
+        return pd.DataFrame(
+            dict(
+                scene_id=infos.scene_id[idx_sample],
+                im_id=infos.im_id[idx_sample],
+                matching_score=infos.matching_score[idx_sample],
+                batch_im_id=infos.batch_im_id[idx_sample],
+                instance_id=infos.instance_id[idx_sample],
+                label=infos.label[idx_sample],
+                time=infos.time[idx_sample],
+            )
+        )
+
     def test_step(self, batch, idx_batch):
         if idx_batch == 0:
             self.move_to_device()
-
+        torch.cuda.empty_cache()
         observation = ObservationTensor(images=batch.rgb, K=batch.K)
-        data_TCO = PandasTensorCollection(
-            infos=batch.infos,
-            poses=batch.TCO_init,
-        )
+        B = batch.TCO_init.shape[0]
+        list_idx_sample = []
+        if B > self.max_num_dets_per_forward:
+            for start_idx in np.arange(0, B, self.max_num_dets_per_forward):
+                end_idx = min(start_idx + self.max_num_dets_per_forward, B)
+                idx_sample_ = np.arange(start_idx, end_idx)
+                list_idx_sample.append(idx_sample_)
+        else:
+            idx_sample = np.arange(0, B)
+            list_idx_sample.append(idx_sample)
 
-        self.timer.tic()
-        preds, refiner_extra_data = self.pose_estimator.forward_refiner(
-            observation=observation,
-            data_TCO_input=data_TCO,
-            n_iterations=self.n_iterations,
-            keep_all_outputs=False,
-            cuda_timer=None,
-        )
+        for idx_sub_batch, idx_sample in enumerate(list_idx_sample):
+            data_TCO = PandasTensorCollection(
+                infos=self.sub_sample_infos(batch.infos, idx_sample),
+                poses=batch.TCO_init[idx_sample],
+            )
 
-        data_TCO_refined = preds[f"iteration={self.n_iterations}"]
-        (
-            data_TCO_scored,
-            scoring_extra_data,
-        ) = self.pose_estimator.forward_scoring_model(
-            observation,
-            data_TCO_refined,
-        )
+            self.timer.tic()
+            preds, refiner_extra_data = self.pose_estimator.forward_refiner(
+                observation=observation,
+                data_TCO_input=data_TCO,
+                n_iterations=self.n_iterations,
+                keep_all_outputs=False,
+                cuda_timer=None,
+            )
+
+            data_TCO_refined = preds[f"iteration={self.n_iterations}"]
+            (
+                data_TCO_scored_,
+                scoring_extra_data,
+            ) = self.pose_estimator.forward_scoring_model(
+                observation,
+                data_TCO_refined,
+            )
+            if idx_sub_batch == 0:
+                data_TCO_scored = data_TCO_scored_
+            else:
+                data_TCO_scored = data_TCO_scored.cat_df_and_infos(data_TCO_scored_)
 
         # Extract the highest scoring pose estimate for each instance_id
         data_TCO_final_scored = self.pose_estimator.filter_pose_estimates(
@@ -102,9 +136,7 @@ class Refiner(pl.LightningModule):
         obj_id = [int(i.split("_")[1]) for i in obj_id]
         refinement_time = self.timer.toc()
         self.timer.reset()
-        save_path = osp.join(
-            self.refined_predictions_dir, f"batch_{idx_batch:06d}.npz"
-        )
+        save_path = osp.join(self.refined_predictions_dir, f"batch_{idx_batch:06d}.npz")
 
         np.savez(
             save_path,

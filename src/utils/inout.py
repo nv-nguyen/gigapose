@@ -367,73 +367,133 @@ def save_predictions_from_batched_predictions(
         logger.info(f"Saved predictions to {save_path}")
 
 
+def generate_test_list(all_detections):
+    all_target_list = {}
+    for im_key in all_detections:
+        # map detections to target_list
+        im_id, scene_id = im_key.split("_")
+        im_id, scene_id = int(im_id), int(scene_id)
+        im_target = {}
+        im_dets = all_detections[im_key]
+        for det in im_dets:
+            if "category_id" in det:
+                obj_id = det["category_id"]
+            elif "obj_id" in det:
+                obj_id = det["obj_id"]
+            else:
+                raise ValueError("category_id or obj_id is not in the detection!")
+            if obj_id not in im_target:
+                im_target[obj_id] = 1
+            else:
+                im_target[obj_id] += 1
+        im_target_list = []
+        for obj_id in im_target.keys():
+            im_target_list.append(
+                {
+                    "scene_id": scene_id,
+                    "im_id": im_id,
+                    "obj_id": obj_id,
+                    "inst_count": im_target[obj_id],
+                }
+            )
+        all_target_list[im_key] = im_target_list
+    return all_target_list
+
+
 def load_test_list_and_cnos_detections(
-    root_dir, dataset_name, max_det_per_object_id=None
+    root_dir, dataset_name, test_setting, max_det_per_object_id=None
 ):
     """
-    We use a sorting techniques which has been done in MegaPose (thanks Mederic Fourmy for sharing!)
-    Idea: when there is no detection at object level, we use use the detections at image level
+    If test_setting == "localization":
+    - We use a sorting techniques which has been done in MegaPose (thanks Mederic Fourmy for sharing!)
+    - Idea: when there is no detection at object level, we use use the detections at image level
+    else:
+    - No sorting techniques since target_objects is not available
     """
-    # load test list
-    test_list = inout.load_json(root_dir / dataset_name / "test_targets_bop19.json")
-
     # load cnos detections
-    cnos_dets_name = cnos_detections[dataset_name]
-    cnos_dets_path = root_dir / "cnos-fastsam" / cnos_dets_name
-    all_cnos_dets = inout.load_json(cnos_dets_path)
+    if dataset_name in ["lmo", "tless", "tudl", "icbin", "itodd", "hb", "ycbv"]:
+        year = "19"
+        det_model = "cnos-fastsam"
+    elif dataset_name in ["hope"]:
+        year = "24"
+        det_model = "cnos-sam"
+    else:
+        raise NotImplementedError(
+            f"Dataset {dataset_name} is not supported with default detections!"
+        )
+    cnos_dets_dir = (
+        root_dir / "default_detections" / f"core{year}_model_based_unseen/" / det_model
+    )
+    # list all detections and take the one matching the dataset_name
+    avail_det_files = os.listdir(cnos_dets_dir)
+    cnos_dets_path = [file for file in avail_det_files if dataset_name in file][0]
+    all_cnos_dets = inout.load_json(os.path.join(cnos_dets_dir, cnos_dets_path))
 
     # sort by image_id
     all_cnos_dets_per_image = group_by_image_level(all_cnos_dets, image_key="image_id")
 
-    selected_detections = []
-    for idx, test in tqdm(enumerate(test_list)):
-        test_object_id = test["obj_id"]
-        scene_id, im_id = test["scene_id"], test["im_id"]
-        image_key = f"{scene_id:06d}_{im_id:06d}"
+    # load test list
 
-        # get the detections for the current image
-        if image_key in all_cnos_dets_per_image:
-            cnos_dets_per_image = all_cnos_dets_per_image[image_key]
-            dets = [
-                det
-                for det in cnos_dets_per_image
-                if (det["category_id"] == test_object_id)
-            ]
-            if len(dets) == 0:  # done in MegaPose
-                dets = copy.deepcopy(cnos_dets_per_image)
-                for det in dets:
-                    det["category_id"] = test_object_id
+    if test_setting == "detection":
+        return (
+            generate_test_list(all_cnos_dets_per_image),
+            all_cnos_dets_per_image,
+        )
+    elif test_setting == "localization":
+        target_file_path = root_dir / dataset_name / f"test_targets_bop{year}.json"
+        assert target_file_path.exists(), f"Combination (dataset, test_setting, year)={dataset_name, test_setting, year} is not available!"
+        logger.info(f"Loading test list from {target_file_path}")
+        test_list = inout.load_json(target_file_path)
+        selected_detections = []
+        for idx, test in tqdm(enumerate(test_list)):
+            test_object_id = test["obj_id"]
+            scene_id, im_id = test["scene_id"], test["im_id"]
+            image_key = f"{scene_id:06d}_{im_id:06d}"
 
-            assert len(dets) > 0
+            # get the detections for the current image
+            if image_key in all_cnos_dets_per_image:
+                cnos_dets_per_image = all_cnos_dets_per_image[image_key]
+                dets = [
+                    det
+                    for det in cnos_dets_per_image
+                    if (det["category_id"] == test_object_id)
+                ]
+                if len(dets) == 0:  # done in MegaPose
+                    dets = copy.deepcopy(cnos_dets_per_image)
+                    for det in dets:
+                        det["category_id"] = test_object_id
 
-            # sort the detections by score descending
-            dets = sorted(
-                dets,
-                key=lambda x: x["score"],
-                reverse=True,
-            )
-            # keep only the top detections
-            if max_det_per_object_id is not None:
-                num_instances = max_det_per_object_id
+                assert len(dets) > 0
+
+                # sort the detections by score descending
+                dets = sorted(
+                    dets,
+                    key=lambda x: x["score"],
+                    reverse=True,
+                )
+                # keep only the top detections
+                if max_det_per_object_id is not None:
+                    num_instances = max_det_per_object_id
+                else:
+                    num_instances = test["inst_count"]
+                dets = dets[:num_instances]
+                selected_detections.append(dets)
             else:
-                num_instances = test["inst_count"]
-            dets = dets[:num_instances]
-            selected_detections.append(dets)
-        else:
-            logger.info(f"No detection for {image_key}")
+                logger.info(f"No detection for {image_key}")
 
-    logger.info(f"Detections: {len(test_list)} test samples!")
-    assert len(selected_detections) == len(test_list)
-    selected_detections = group_by_image_level(
-        selected_detections, image_key="image_id"
-    )
-    test_list = group_by_image_level(test_list, image_key="im_id")
-    return test_list, selected_detections
+        logger.info(f"Detections: {len(test_list)} test samples!")
+        assert len(selected_detections) == len(test_list)
+        selected_detections = group_by_image_level(
+            selected_detections, image_key="image_id"
+        )
+        test_list = group_by_image_level(test_list, image_key="im_id")
+        return test_list, selected_detections
+    else:
+        raise NotImplementedError(f"Test setting {test_setting} is not supported!")
 
 
-def load_test_list_and_init_locs(root_dir, dataset_name, init_loc_path):
-    # load test list and init locs
-    test_list = inout.load_json(root_dir / dataset_name / "test_targets_bop19.json")
+def load_test_list_and_init_locs(root_dir, dataset_name, init_loc_path, test_setting):
+    # load init locs
     try:
         init_locs = load_bop_results(init_loc_path, additional_name="instance_id")
         instance_ids = [pose["instance_id"] for pose in init_locs]
@@ -445,8 +505,18 @@ def load_test_list_and_init_locs(root_dir, dataset_name, init_loc_path):
         num_hypothesis = 1
     # sort by image_id
     all_init_locs_per_image = group_by_image_level(init_locs, image_key="im_id")
-    test_list = group_by_image_level(test_list, image_key="im_id")
-    return test_list, all_init_locs_per_image, num_hypothesis
+    if test_setting == "detection":
+        return (
+            generate_test_list(all_init_locs_per_image),
+            all_init_locs_per_image,
+            num_hypothesis,
+        )
+    elif test_setting == "localization":
+        test_list = inout.load_json(root_dir / dataset_name / "test_targets_bop19.json")
+        test_list = group_by_image_level(test_list, image_key="im_id")
+        return test_list, all_init_locs_per_image, num_hypothesis
+    else:
+        raise NotImplementedError(f"Test setting {test_setting} is not supported!")
 
 
 if __name__ == "__main__":

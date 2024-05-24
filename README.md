@@ -31,6 +31,10 @@ src="https://img.shields.io/badge/-SuppMat-blue.svg?colorA=333&logo=drive" heigh
 
 **TL;DR**: GigaPose is a "hybrid" template-patch correspondence approach to estimate 6D pose of novel objects in RGB images: GigaPose first uses templates, rendered images of the CAD models, to recover the out-of-plane rotation (2DoF) and then uses patch correspondences to estimate the remaining 4DoF. 
 
+The codebase is slightly modified to adapt [BOP challenge 2024](https://bop.felk.cvut.cz/challenges/bop-challenge-2024/), if you work on [BOP challenge 2023](https://bop.felk.cvut.cz/challenges/bop-challenge-20243) and have any issues, please go back to previous commits:
+```
+git checkout 388e8bddd8a5443e284a7f70ad103d03f3f461c5
+```
 
 
 ### News 📣
@@ -83,7 +87,8 @@ pip install git+https://github.com/thodan/bop_toolkit.git
 ### Checkpoints
 ```
 # download cnos detections for BOP'23 dataset
-python -m src.scripts.download_cnos_bop23
+pip install -U "huggingface_hub[cli]"
+python -m src.scripts.download_default_detections
 
 # download gigaPose's checkpoints 
 python -m src.scripts.download_gigapose
@@ -122,12 +127,11 @@ python -m src.scripts.download_bop_templates
 python -m src.scripts.render_bop_templates
 ```
 
-Here is the structure of $ROOT_DIR after downloading all the above files:
+Here is the structure of $ROOT_DIR after downloading all the above files (similar to [BOP HuggingFace Hub](https://huggingface.co/datasets/bop-benchmark/datasets/tree/main)):
 ```
 ├── $ROOT_DIR
     ├── datasets/ 
-      ├── cnos-fastsam/ 
-      ├── cnos-sam/ 
+      ├── default_detections/  
       ├── lmo/ 
       ├── ... 
       ├── templates/
@@ -161,9 +165,6 @@ ln -s /path/to/datasets/gso $ROOT/datasets/gso
 
 </details>
 
-## Testing on custom objects 
-
-Working in progress...
 
 ##  Testing on [BOP datasets](https://bop.felk.cvut.cz/datasets/) :rocket:
 
@@ -171,9 +172,49 @@ Working in progress...
   <img src=./media/inference.png width="100%"/>
 </p>
 
-GigaPose's coarse prediction for seven core datasets of BOP challenge is available in [this link](https://drive.google.com/file/d/1QaGNIPZyR8FOOsT35V7pWJF2VlN9_M6l/view?usp=sharing). Below are the steps to reproduce the results and evaluate with BOP toolkit.
+If you want to test on [BOP challenge 2024](https://bop.felk.cvut.cz/challenges/bop-challenge-2024/) datasets, please follow the instructions below:
+<details><summary>Click to expand</summary>
+
+1. Running coarse prediction on a single dataset:
+```
+# for 6D detection task
+python test.py test_dataset_name=hope run_id=$NAME_RUN test_setting=detection
+
+# for 6D localization task (for only core19 datasets)
+python test.py test_dataset_name=lmo run_id=$NAME_RUN test_setting=localization
+```
+
+2. Running refinement on a single dataset:
+```
+# for both 6D detection task
+python refine.py test_dataset_name=hope run_id=$NAME_RUN test_setting=detection
+
+# for 6D localization task (for only core19 datasets)
+python refine.py test_dataset_name=lmo run_id=$NAME_RUN test_setting=localization
+```
+Quantitative results on 6D detection task on HOPEv2 datasets:
+
+| Method      | Refinement      | Model-based unseen |
+|---------------|---------------|-----------|
+| GigaPose  | --  | 22.57 | 
+| GigaPose  | MegaPose  | -- | 
+
+
+3. Evaluating with [BOP toolkit](https://github.com/thodan/bop_toolkit):
+```
+export INPUT_DIR=DIR_TO_YOUR_PREDICTION_FILE
+export FILE_NAME=NAME_PREDICTION_FILE
+cd $ROOT_DIR_OF_TOOLKIT
+python scripts/eval_bop24_pose.py --results_path $INPUT_DIR --eval_path $INPUT_DIR --result_filenames=$FILE_NAME
+```
+
+</details>
+
+If you want to test on [BOP challenge 2023](https://bop.felk.cvut.cz/challenges/bop-challenge-2023/) datasets, please follow the instructions below:
 
 <details><summary>Click to expand</summary>
+
+GigaPose's coarse prediction for seven core datasets of BOP challenge 2023 is available in [this link](https://drive.google.com/file/d/1QaGNIPZyR8FOOsT35V7pWJF2VlN9_M6l/view?usp=sharing). Below are the steps to reproduce the results and evaluate with BOP toolkit.
 
 1. Running coarse prediction on a single dataset:
 ```
@@ -206,6 +247,17 @@ python bop_toolkit/scripts/eval_bop19_pose.py --renderer_type=vispy --results_pa
 </p>
 
 <details><summary>Click to expand</summary>
+
+If you work on this setting, please first go back to previous commits:
+```
+git checkout 388e8bddd8a5443e284a7f70ad103d03f3f461c5
+```
+
+Then, download CNOS's detections:
+```
+# download gigaPose's checkpoints 
+python -m src.scripts.download_cnos_bop23
+```
 
 To relax the need of CAD models, we can reconstruct 3D models from a single image using recent works on diffusion-based 3D reconstruction such as [Wonder3D](https://github.com/xxlong0/Wonder3D), then apply the same pipeline as GigaPose to estimate object pose. Here are the steps to reproduce the results of novel object pose estimation from a single image on LM-O dataset as shown in our paper:
 

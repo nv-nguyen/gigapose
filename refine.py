@@ -28,6 +28,7 @@ def run_refiner(cfg: DictConfig):
     cfg.data.test.dataloader.batch_size = 1
     cfg.data.test.dataloader.dataset_name = cfg.test_dataset_name
     cfg.data.test.dataloader.init_loc_path = init_loc_path
+    cfg.data.test.dataloader.test_setting = cfg.test_setting
     test_dataset = instantiate(cfg.data.test.dataloader)
 
     dataloader = DataLoader(

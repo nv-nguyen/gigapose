@@ -43,6 +43,7 @@ class GigaPose(pl.LightningModule):
         log_interval,
         log_dir,
         max_num_dets_per_forward=None,
+        test_setting="localization",
         **kwargs,
     ):
         # define the network
@@ -54,6 +55,7 @@ class GigaPose(pl.LightningModule):
         self.testing_metric = testing_metric
 
         self.max_num_dets_per_forward = max_num_dets_per_forward
+        self.test_setting = test_setting # if "localization" filter the predictions, else no filter the predictions
 
         self.log_interval = log_interval
         self.log_dir = log_dir
@@ -610,7 +612,6 @@ class GigaPose(pl.LightningModule):
         selected_idxs, predictions = self.filter_and_save(
             predictions, test_list=batch.test_list, time=total_time, save_path=save_path
         )
-
         if idx_batch % self.log_interval == 0 and self.max_num_dets_per_forward is None:
             vis_img = self.vis_retrieval(
                 template_data=template_data,

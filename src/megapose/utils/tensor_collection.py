@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-
 # Standard Library
 from pathlib import Path
 
@@ -141,12 +140,21 @@ class PandasTensorCollection(TensorCollection):
         assert len(infos) == len(self.infos)
         assert (infos.index == self.infos.index).all()
         return PandasTensorCollection(infos=infos, **self.tensors)
-    
+
     def cat_df(self, df):
         for k, t in self._tensors.items():
             t = torch.cat([t, df._tensors[k]], dim=0)
             self._tensors[k] = t
         return PandasTensorCollection(infos=self.infos, **self.tensors)
+
+    def cat_df_and_infos(self, df):
+        for k, t in self._tensors.items():
+            t = torch.cat([t, df._tensors[k]], dim=0)
+            self._tensors[k] = t
+        new_infos = dict()
+        for k, v in self.infos.items():
+            new_infos[k] = pd.concat([self.infos[k], df.infos[k]], ignore_index=True)
+        return PandasTensorCollection(infos=pd.DataFrame(new_infos), **self.tensors)
 
     def clone(self):
         tensors = super().clone().tensors

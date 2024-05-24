@@ -17,3 +17,4 @@ dataloader:
     num_templates: 162
     image_name: OBJECT_ID/VIEW_ID.png
     pose_name: object_poses/OBJECT_ID.npy
+  test_setting:

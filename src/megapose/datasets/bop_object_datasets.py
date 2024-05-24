@@ -38,7 +38,6 @@ class BOPObjectDataset(RigidObjectDataset):
             obj_id = int(obj_id)
             obj_label = f"obj_{obj_id:06d}"
             mesh_path = (ds_dir / obj_label).with_suffix(format).as_posix()
-            print(mesh_path)
             symmetries_discrete = [
                 DiscreteSymmetry(pose=np.array(x).reshape((4, 4)))
                 for x in bop_info.get("symmetries_discrete", [])
