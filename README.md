@@ -14,7 +14,7 @@ via One Correspondence
 
 <p></p>
 
-<a href="https://nv-nguyen.github.io/gigaPose/"><img 
+<a href="https://nv-nguyen.github.io/gigapose/"><img 
 src="https://img.shields.io/badge/-Webpage-blue.svg?colorA=333&logo=html5" height=28em></a>
 <a href="https://arxiv.org/abs/2311.14155"><img 
 src="https://img.shields.io/badge/-Paper-blue.svg?colorA=333&logo=arxiv" height=28em></a>
