@@ -1,0 +1,122 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "megapose"
+version = "1.0"
+description = "Pose Estimation Library"
+readme = "README.md"
+requires-python = "==3.9.6"
+license = { text = "MIT" }
+authors = [
+  { name = "Yann Labbe", email = "yann.labbe@inria.fr" },
+  { name = "Lucas Manuelli", email = "lmanuelli@nvidia.com" },
+]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Robotics",
+]
+dependencies = [
+  "blenderproc",
+  "bokeh",
+  "bop-toolkit-lib",
+  "distinctipy",
+  "einops",
+  "ffmpeg",
+  "fvcore",
+  "gdown",
+  "hydra-colorlog",
+  "hydra-core",
+  "huggingface-hub<1.0",
+  "iopath",
+  "joblib",
+  "matplotlib",
+  "nvisii",
+  "omegaconf",
+  "onnx",
+  "onnxruntime",
+  "open3d",
+  "opencv-python",
+  "panda3d==1.11.0.dev3233",
+  "pandas",
+  "peft",
+  "pin==2.6.20",
+  "pycocotools",
+  "pypng",
+  "pyrender",
+  "pyrr",
+  "pytorch-lightning==1.8.1",
+  "roma",
+  "ruamel.yaml",
+  "scikit-image",
+  "scipy",
+  "seaborn",
+  "setuptools<81",
+  "setuptools-scm>=6.4.2",
+  "simplejson",
+  "torch==2.0.0+cu117",
+  "torchmetrics==0.10.3",
+  "torchvision==0.15.1+cu117",
+  "tqdm",
+  "transforms3d",
+  "wandb",
+  "webdataset",
+  "xatlas",
+  "xformers==0.0.18",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ipdb",
+  "ipython",
+  "jupyter",
+]
+ci = [
+  "anybadge==1.8.0",
+  "black==22.6.0",
+  "build==0.7.0",
+  "flake8==4.0.1",
+  "flake8-copyright==0.2.2",
+  "flake8-docstrings==1.6.0",
+  "flake8-isort==4.1.1",
+  "graphviz==0.19.1",
+  "mypy==0.931",
+  "pytest==6.2.5",
+  "pytest-cov==3.0.0",
+  "sphinx==4.3.0",
+  "sphinx-rtd-theme==1.0.0",
+  "twine==3.7.1",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests"]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+prerelease = "allow"
+
+[tool.uv.sources]
+bop-toolkit-lib = { git = "https://github.com/thodan/bop_toolkit.git" }
+panda3d = { index = "panda3d" }
+torch = { index = "pytorch-cu117" }
+torchvision = { index = "pytorch-cu117" }
+
+[[tool.uv.index]]
+name = "panda3d"
+url = "https://archive.panda3d.org/"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu117"
+url = "https://download.pytorch.org/whl/cu117"
+explicit = true

@@ -2,6 +2,7 @@
 configs/user/nguyen.yaml
 slurm_logs/
 results*
+gigaPose_datasets/
 lightning_logs/
 bop_toolkit/
 configs/user/nguyen.yaml

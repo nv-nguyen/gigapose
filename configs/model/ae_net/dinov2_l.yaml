@@ -3,8 +3,9 @@ model_name: dinov2_vitl14
 
 dinov2_model:
   _target_: torch.hub.load
-  repo_or_dir: facebookresearch/dinov2
+  repo_or_dir: facebookresearch/dinov2:9c7e3245797cf7be5b5729445a4af1272bd610df
   model: ${model.ae_net.model_name}
+  skip_validation: true
 
 max_batch_size: 64
 descriptor_size: 1024

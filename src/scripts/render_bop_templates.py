@@ -4,6 +4,7 @@ from tqdm import tqdm
 import time
 from functools import partial
 import multiprocessing
+import torch
 import hydra
 from omegaconf import OmegaConf
 import glob
@@ -19,13 +20,14 @@ def call_render(
     idx_obj,
     list_cad_path,
     list_output_dir,
-    obj_pose_path,
+    list_obj_pose_path,
     disable_output,
     num_gpus,
     use_blenderProc,
 ):
     output_dir = list_output_dir[idx_obj]
     cad_path = list_cad_path[idx_obj]
+    obj_pose_path = list_obj_pose_path[idx_obj]
     if os.path.exists(output_dir):
         os.system("rm -r {}".format(output_dir))
     if not os.path.exists(output_dir):
@@ -36,7 +38,11 @@ def call_render(
     if use_blenderProc:  # TODO: remove blenderProc
         command = f"blenderproc run ./src/lib3d/blenderproc.py {cad_path} {obj_pose_path} {output_dir} {gpus_device}"
     else:  # TODO: understand why this is not working for tless and itodd
-        command = f"python -m src.custom_megapose.call_panda3d {cad_path} {obj_pose_path} {output_dir} {gpus_device}"
+        command = (
+            "EGL_PLATFORM=surfaceless DISPLAY= "
+            f"python -m src.custom_megapose.call_panda3d {cad_path} "
+            f"{obj_pose_path} {output_dir} {gpus_device}"
+        )
 
     if disable_output:
         command += " true"
@@ -60,7 +66,7 @@ def call_render(
     config_name="train",
 )
 def render(cfg) -> None:
-    num_gpus = 4
+    num_gpus = max(1, torch.cuda.device_count())
     disable_output = True
 
     OmegaConf.set_struct(cfg, False)
@@ -95,16 +101,18 @@ def render(cfg) -> None:
         cad_dir = root_dir / dataset_name / cad_name
 
         cad_paths = cad_dir.glob("*.ply")
-        cad_paths = list(cad_paths)
+        cad_paths = [cad_path.resolve() for cad_path in cad_paths]
         logger.info(f"Found {len(list(cad_paths))} objects")
 
         output_dirs = []
+        obj_pose_paths = []
         for cad_path in cad_paths:
             object_id = int(os.path.basename(cad_path).split(".")[0][4:])
-            output_dir = dataset_save_dir / f"{object_id:06d}"
+            output_dir = (dataset_save_dir / f"{object_id:06d}").resolve()
             output_dirs.append(output_dir)
 
-            obj_pose_path = os.path.join(obj_pose_dir, f"{object_id:06d}.npy")
+            obj_pose_path = (obj_pose_dir / f"{object_id:06d}.npy").resolve()
+            obj_pose_paths.append(obj_pose_path)
             np.save(obj_pose_path, template_poses)
 
         os.makedirs(dataset_save_dir, exist_ok=True)
@@ -118,7 +126,7 @@ def render(cfg) -> None:
             call_render,
             list_cad_path=cad_paths,
             list_output_dir=output_dirs,
-            obj_pose_path=obj_pose_path,
+            list_obj_pose_path=obj_pose_paths,
             disable_output=disable_output,
             num_gpus=num_gpus,
             use_blenderProc=True if dataset_name in ["tless", "itodd"] else False,

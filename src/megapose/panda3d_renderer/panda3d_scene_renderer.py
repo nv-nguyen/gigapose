@@ -60,7 +60,8 @@ class App(ShowBase):
     def __init__(self) -> None:
         p3d.core.load_prc_file_data(
             __file__,
-            "load-display pandagl\n"
+            "load-display p3headlessgl\n"
+            "aux-display pandagl\n"
             "notify-level-assimp fatal\n"
             "notify-level-egldisplay fatal\n"
             "notify-level-glgsg fatal\n"
