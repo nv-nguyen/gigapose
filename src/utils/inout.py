@@ -413,16 +413,27 @@ def load_test_list_and_cnos_detections(
     # load cnos detections
     if dataset_name in ["lmo", "tless", "tudl", "icbin", "itodd", "hb", "ycbv"]:
         year = "19"
+        det_folder = f"core{year}_model_based_unseen"
         det_model = "cnos-fastsam"
     elif dataset_name in ["hope"]:
         year = "24"
+        det_folder = f"core{year}_model_based_unseen"
         det_model = "cnos-sam"
+        current_bop24_mask_det_folder = (
+            root_dir
+            / "default_detections"
+            / "h3_bop24_model_based_unseen"
+            / "cnos-fastsam-with-mask"
+        )
+        if current_bop24_mask_det_folder.exists():
+            det_folder = "h3_bop24_model_based_unseen"
+            det_model = "cnos-fastsam-with-mask"
     else:
         raise NotImplementedError(
             f"Dataset {dataset_name} is not supported with default detections!"
         )
     cnos_dets_dir = (
-        root_dir / "default_detections" / f"core{year}_model_based_unseen/" / det_model
+        root_dir / "default_detections" / det_folder / det_model
     )
     # list all detections and take the one matching the dataset_name
     avail_det_files = os.listdir(cnos_dets_dir)

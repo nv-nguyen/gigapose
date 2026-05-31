@@ -73,6 +73,14 @@ GigaPose's codebase is mainly derived from [CNOS](https://github.com/nv-nguyen/c
 
 ### Environment
 ```
+uv sync --frozen
+source .venv/bin/activate
+```
+
+The `uv.lock` file pins the Python package set and `.python-version` pins
+Python 3.9.6. For the original Conda-based setup, use:
+
+```
 conda env create -f environment.yml
 conda activate gigapose
 bash src/scripts/install_env.sh
